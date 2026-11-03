@@ -1,0 +1,123 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import SectionHead from '../components/SectionHead.astro';
+import { REPO_BLOB, REPO_TREE } from '../data/site';
+
+const files = [
+  { icon: 'file', name: 'AGENTS.md', d: 'The rules and the layout of the repository, written for coding agents. Start here.', href: `${REPO_BLOB}/AGENTS.md` },
+  { icon: 'file', name: 'CLAUDE.md', d: 'The short version for Claude Code, pointing at AGENTS.md.', href: `${REPO_BLOB}/CLAUDE.md` },
+  { icon: 'sparkles', name: '.claude/skills/', d: 'Step-by-step skills for the common jobs, such as adding a module.', href: `${REPO_TREE}/.claude/skills` },
+  { icon: 'globe', name: 'llms.txt', d: 'A plain-text overview of this site for language models. Also in the repository.', href: '/llms.txt', local: true },
+];
+const api = [
+  ['GET /api/suite/info', 'Version, licence, whether it runs in demo mode, how many modules, whether onboarding is done.'],
+  ['GET /api/suite/platform', 'Operating system, architecture, Raspberry Pi or not, Python and uv versions.'],
+  ['GET /api/suite/ports', 'Serial ports, which look like servo boards, and which role each one has.'],
+  ['GET /api/suite/cameras', 'Configured cameras with live status, plus detected cameras not yet added.'],
+  ['GET /api/suite/snapshot/<i>.jpg', 'One JPEG frame from camera i. For people and for AI.'],
+  ['GET /api/suite/checklist', 'What is connected and what is left, with the next item to do.'],
+  ['GET /api/suite/diagnostics', 'A plain-text report: platform, ports, motors, cameras, checklist, versions. No personal data.'],
+  ['GET /api/suite/modules', 'Module manifests, whether each is enabled, and any load error.'],
+  ['GET, POST /api/suite/settings', 'Read and change the whitelisted settings.'],
+  ['POST /api/suite/motors', 'Scan a bus, or set one motor ID (refused unless exactly one motor answers).'],
+  ['POST /api/suite/identify', 'Start or cancel the unplug and replug board finder.'],
+  ['ANY /api/m/<id>/…', 'Forwarded to a module’s backend.'],
+];
+const prompts = [
+  'Read AGENTS.md. Then start the app in demo mode and tell me, from the checklist API, what is left to do.',
+  'Use the add-module skill to add a module that shows the follower arm’s joint angles as a live table. Test it in demo mode.',
+];
+---
+<Base title="Built for AI agents" description="SO-101 Suite is friendly to AI coding agents: AGENTS.md, skills, a documented HTTP API and a demo mode with simulated hardware to test against.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>For AI agents</span></nav>
+    <h1>Built for AI agents</h1>
+    <p class="lead">Claude Code, Codex, Cursor and friends read the same rules you do. They can run the app with simulated hardware, call its API and extend it, without touching a real arm.</p>
+    <div class="row" style="margin-top:var(--s5)">
+      <a class="btn primary" href="/demo/"><Icon name="play" /> Try the live demo</a>
+      <a class="btn" href={`${REPO_BLOB}/AGENTS.md`} target="_blank" rel="noopener noreferrer">Read AGENTS.md <Icon name="external" /></a>
+    </div>
+  </div>
+
+  <section class="section tight" aria-labelledby="files-h">
+    <div class="wrap">
+      <SectionHead eyebrow="In the repository" title="Rules, skills and a quick overview" id="files-h" />
+      <div class="grid g4">
+        {files.map((f) => (
+          <a class="card feat" href={f.href} {...(f.local ? {} : { target: '_blank', rel: 'noopener noreferrer' })}>
+            <span class="fi"><Icon name={f.icon} /></span>
+            <h3 class="mono" style="font-size:1.02rem">{f.name}</h3>
+            <p>{f.d}</p>
+            <span class="more">Open <Icon name={f.local ? 'arrow' : 'external'} /></span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" aria-labelledby="demo-h">
+    <div class="wrap">
+      <div class="split">
+        <div class="stack">
+          <span class="eyebrow">No arm needed</span>
+          <h2 id="demo-h">A demo mode that is safe to test against.</h2>
+          <p class="lead">Demo mode swaps in a simulated motor bus and synthetic cameras. It never opens a real serial port, so an agent can click, calibrate and break things freely.</p>
+          <ul class="checks">
+            <li><Icon name="check" /><span><b>In the browser:</b> the <a href="/demo/">live demo</a> runs the same app with an in-browser fake backend.</span></li>
+            <li><Icon name="check" /><span><b>On your machine:</b> the real Python backend with simulated hardware, using the command on the right.</span></li>
+            <li><Icon name="check" /><span>Add <code>?scenario=fresh</code>, <code>ready</code> or <code>nothing</code>, and <code>?seed=7</code>, to the demo URL for a repeatable starting point.</span></li>
+          </ul>
+        </div>
+        <div class="win" data-copy-scope>
+          <div class="bar" aria-hidden="true"><i></i><i></i><i></i><span>terminal</span></div>
+          <pre><code data-copy-source><span class="c"># simulated hardware, no arm, no real serial port</span>
+<span class="o">$</span> uv run so101 start --demo --no-browser --port 8112
+
+<span class="c"># then, from another terminal</span>
+<span class="o">$</span> curl http://localhost:8112/api/suite/checklist
+<span class="o">$</span> curl -o cam0.jpg http://localhost:8112/api/suite/snapshot/0.jpg</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight" aria-labelledby="api-h">
+    <div class="wrap">
+      <SectionHead eyebrow="HTTP API" title="Everything the UI does, an agent can do." lead="The app talks to its backend with plain JSON over HTTP. These are the main endpoints. Reading and scanning never write to a motor." id="api-h" />
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th scope="col">Request</th><th scope="col">What it does</th></tr></thead>
+          <tbody>{api.map(([r, d]) => <tr><td>{r}</td><td>{d}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin-top:var(--s4)">The full list and the data shapes are in the <a href="/docs/">docs</a> and in the repository.</p>
+    </div>
+  </section>
+
+  <section class="section alt" aria-labelledby="prompts-h">
+    <div class="wrap">
+      <SectionHead eyebrow="Try it" title="Two prompts to start with" id="prompts-h" />
+      <div class="grid g2">
+        {prompts.map((p) => (
+          <div class="card flat stack" data-copy-scope>
+            <div class="cmd"><pre style="white-space:normal;line-height:1.5"><code data-copy-source>{p}</code></pre><button class="copy" type="button" data-copy aria-label="Copy this prompt"><span class="idle"><Icon name="copy" /> Copy</span><span class="done"><Icon name="check" /> Copied</span></button></div>
+          </div>
+        ))}
+      </div>
+      <p class="sr-only" role="status" aria-live="polite" data-copy-status></p>
+    </div>
+  </section>
+
+  <section class="section tight" aria-labelledby="rules-h">
+    <div class="wrap narrow">
+      <SectionHead eyebrow="House rules" title="What every agent should know" id="rules-h" />
+      <ul class="checks">
+        <li><Icon name="shield" /><span>The arm moves only when a person asks, after a plain sentence saying what will move.</span></li>
+        <li><Icon name="shield" /><span>One program owns a serial port at a time. New code never opens a port the app already owns.</span></li>
+        <li><Icon name="shield" /><span>Demo and simulation code never opens a real serial port.</span></li>
+        <li><Icon name="shield" /><span>No browser pop-ups, no silent failures: every disabled control says why.</span></li>
+      </ul>
+    </div>
+  </section>
+</Base>

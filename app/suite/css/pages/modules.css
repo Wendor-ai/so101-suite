@@ -1,0 +1,40 @@
+/* Modules list, module host bar */
+.mod-card{display:flex;flex-direction:column;gap:var(--s3)}
+.mod-head{display:flex;align-items:flex-start;gap:var(--s3)}
+.mod-ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--accent-soft);color:var(--accent-text)}
+.mod-ico svg{width:24px;height:24px}
+.mod-head h3{font-size:1.15rem}
+.mod-meta{font-size:.84rem;margin-top:2px}
+.mod-desc{margin:0;color:var(--text)}
+.mod-state{margin:0;font-size:.92rem}
+.mod-open{margin-top:auto}
+.mod-add h3{font-size:1.1rem}
+.mod-add .row>svg{width:22px;height:22px;color:var(--accent-text)}
+.mod-add .copybox{align-items:flex-start;padding:8px 8px 8px 14px}
+.mod-add .copybox code{white-space:normal;overflow:visible;overflow-wrap:anywhere;line-height:1.5;align-self:center}
+.mod-add .copybox .btn{flex:none}
+.mod-small{font-size:.88rem;margin:0}
+.mod-steps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:var(--s3)}
+.mod-steps li::marker{font-weight:800;color:var(--accent-text)}
+.mod-steps .muted{font-size:.93rem;margin-top:2px}
+.mod-code-label{font-size:.82rem}
+.mod-code{margin:0;padding:var(--s3) var(--s4);background:var(--bg);border:1px solid var(--line2);border-radius:12px;overflow:auto;font-size:.82rem;line-height:1.5}
+.mod-code code{background:none;border:0;padding:0;font-size:inherit;white-space:pre}
+
+/* host page for a module's own pages (#/m/<id>/<page>) */
+.mod-bar{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s4)}
+.mod-bar .crumb{display:flex;align-items:center;gap:8px;font-weight:650;color:var(--muted);min-width:0}
+.mod-bar .crumb a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:700}
+.mod-bar .crumb svg{width:16px;height:16px}
+.mod-bar .crumb b{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mod-bar .tabs{margin:0 0 0 auto;border-bottom:0}
+.mod-problem{display:flex;flex-direction:column;gap:var(--s4)}
+.mod-problem .row{gap:var(--s2)}
+.mod-bar .tab{text-decoration:none;display:inline-block}
+.mod-bar .tab[aria-current="page"]{color:var(--text);border-bottom-color:var(--accent)}
+
+/* Modules often use plain DOM with no classes: give bare controls a sensible look so they are usable */
+.mod-host button:not([class]){display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+.mod-host button:not([class]):hover{border-color:var(--faint)}
+.mod-host button:not([class])[disabled]{color:var(--faint);border-style:dashed;cursor:not-allowed}
+.mod-host input:not([class]):not([type=checkbox]):not([type=radio]):not([type=range]),.mod-host select:not([class]),.mod-host textarea:not([class]){min-height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--bg);color:var(--text);padding:8px 12px;font:inherit;max-width:100%}

@@ -1,0 +1,583 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SO-101 Digital Twin</title>
+<style>
+:root{--bg:#07090d;--card:#0f141c;--line:#1d2633;--fg:#e8eef6;--mut:#7d8ea3;--acc:#3ddc97;--acc2:#4cc2ff;--org:#ff8a1f;--warn:#ffb454;--bad:#ff6b6b}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--fg);font:14px system-ui,sans-serif;overflow:hidden}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 400px;height:100vh}
+@media(max-width:1000px){.app{grid-template-columns:minmax(0,1fr) 300px}}
+#stage{position:relative;overflow:hidden;min-width:0;min-height:320px;background:radial-gradient(900px 500px at 50% 35%,#16202e,#07090d 70%)}
+#stage canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;pointer-events:none;font-variant-numeric:tabular-nums}
+.title{left:20px;top:16px}.title h1{margin:0;font-size:19px;letter-spacing:.04em}.title h1 b{color:var(--org)}
+.title div{color:var(--mut);font-size:12px;margin-top:3px}
+.live{right:20px;top:18px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
+.pulse{width:9px;height:9px;border-radius:50%;background:var(--bad)}.pulse.on{background:var(--acc);box-shadow:0 0 0 0 var(--acc);animation:p 1.6s infinite}
+@keyframes p{70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.tools{pointer-events:auto;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:8px;pointer-events:auto;background:#0b1018cc;backdrop-filter:blur(8px);border:1px solid var(--line);padding:8px;border-radius:14px}
+.tools button{background:transparent;color:var(--fg);border:1px solid var(--line);padding:7px 12px;font-weight:600;border-radius:9px}.tools button.on{background:var(--org);color:#1a0d00;border-color:var(--org)}
+.tag3d{position:absolute;transform:translate(-50%,-100%);padding:5px 10px;border-radius:99px;background:#0b1018d9;border:1px solid var(--org);color:var(--fg);font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none}
+.tag3d i{font-style:normal;color:var(--org);margin-right:6px}
+#loading{left:50%;top:50%;transform:translate(-50%,-50%);color:var(--mut);font-size:13px;letter-spacing:.08em}
+aside{overflow:hidden;padding:12px;border-left:1px solid var(--line);background:#0a0e14;display:flex;flex-direction:column;gap:10px;min-height:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.card h2{margin:0;font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+#cam{width:100%;aspect-ratio:4/3;max-height:33vh;background:#000;border-radius:12px;object-fit:contain;display:block}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--bad);margin-right:6px}.dot.on{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.mono{font-family:ui-monospace,monospace;font-size:11px;color:var(--mut);margin:6px 0}
+.j{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;margin:5px 0;font-size:13px;font-variant-numeric:tabular-nums}
+.j b{font-weight:600}.j em{color:var(--mut);font-style:normal;font-size:12px;min-width:56px;text-align:right}
+button{background:var(--acc);color:#04130c;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;font-size:13px}
+button.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}button.sm{padding:7px 10px;font-size:12px}button:disabled{opacity:1!important;background:transparent!important;color:var(--mut)!important;border:1px dashed var(--line)!important;cursor:not-allowed!important;font-weight:600}
+#askbar{position:fixed;left:0;right:0;bottom:18px;z-index:90;display:none;justify-content:center;padding:0 12px}#askbar.on{display:flex}
+.askbox{max-width:560px;background:var(--card);border:2px solid var(--org);border-radius:14px;padding:14px 16px;box-shadow:0 10px 40px #000a;font-size:14px;line-height:1.45}.askbtn{display:flex;gap:10px;margin-top:10px}
+.whyoff{font-size:11.5px;color:var(--mut);line-height:1.5;margin:2px 2px 6px}.whyoff b{color:var(--fg);font-weight:600}
+select{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:7px}
+.badge{font-size:11px;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}.badge.ok{color:var(--acc);border-color:var(--acc)}.badge.no{color:var(--warn);border-color:var(--warn)}
+.steps{display:flex;gap:6px;margin:12px 0}.st{flex:1;padding:8px;border:1px solid var(--line);border-radius:11px;font-size:11px;color:var(--mut)}
+.st b{display:block;font-size:12px;color:var(--fg);margin-bottom:2px}.st.cur{border-color:var(--acc2);box-shadow:0 0 0 3px #4cc2ff2e}.st.ok{border-color:var(--acc)}.st.ok b{color:var(--acc)}
+.hint{padding:11px 13px;border-radius:12px;background:#4cc2ff1a;margin:10px 0;line-height:1.45;font-size:13px}
+.err{background:#ff6b6b24;color:var(--bad)}.okmsg{background:#3ddc9724}.empty{color:var(--mut);padding:8px 0}
+details{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}summary{cursor:pointer;color:var(--mut);font-size:12px;letter-spacing:.05em}
+.tune{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;margin:8px 0;font-size:12px}.tune .b{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}.tune small{color:var(--mut)}
+button.on{background:var(--org);color:#1a0d00;border-color:var(--org)}
+.sp{position:absolute;left:20px;bottom:76px;width:330px;overflow:hidden;z-index:4;padding:14px;border:1px solid var(--line);border-radius:18px;background:#090d14e6;backdrop-filter:blur(14px);display:none}
+.sp h3{margin:0 0 10px;font-size:13px;letter-spacing:.06em}.sp .g{margin:12px 0 4px;font-size:11px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{background:transparent;color:var(--fg);border:1px solid var(--line);padding:6px 10px;border-radius:99px;font-size:12px;font-weight:600}.chip.on{background:var(--org);color:#1a0d00;border-color:var(--org)}
+.sp input[type=range]{width:100%;accent-color:var(--org)}
+.jl{position:absolute;pointer-events:none;white-space:nowrap;z-index:1;transform:translate(10px,-50%);font-size:11px;font-weight:600;padding:3px 8px 3px 14px;border-radius:7px;background:#0a0f17cc;border:1px solid #ffffff2e;color:var(--fg);font-variant-numeric:tabular-nums}
+.jl::before{content:"";position:absolute;left:5px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:var(--org)}
+.jl b{color:var(--org);font-weight:700;margin-right:5px}
+.jl.bad{display:block !important;white-space:normal;width:230px;transform:translate(34px,calc(-100% - 34px));font-size:12px;line-height:1.35;padding:6px 10px;background:#5a1414f2;border-color:var(--bad);color:#fff;z-index:3;animation:badp 1s infinite}
+.jl.bad::before{display:none}.jl.bad::after{content:"";position:absolute;left:0;top:100%;width:48px;height:2px;background:var(--bad);transform-origin:left center;transform:rotate(135deg)}
+.jl.bad.flip{transform:translate(calc(-100% - 34px),calc(-100% - 34px))}.jl.bad.flip::after{left:100%;transform:rotate(45deg)}
+.jl.bad b{color:#fff;display:block}.jl.bad .bm{display:block;font-weight:600;color:#ffd7d7;margin-top:2px}
+.jm{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border:2px solid var(--bad);border-radius:50%;pointer-events:none;z-index:2;display:none;animation:badp 1s infinite}
+.jl.test{display:block !important;background:#4a2a05f0;border-color:var(--org);color:#fff;z-index:3;animation:badp 1.4s infinite}
+@keyframes badp{0%,100%{box-shadow:0 0 0 0 #ff6b6b99}50%{box-shadow:0 0 0 9px #ff6b6b00}}
+.prob{border:1px solid var(--bad);background:#ff6b6b17;border-radius:12px;padding:11px 13px;margin:10px 0;font-size:13px;line-height:1.45}
+.prob .pt{font-weight:700;color:var(--bad);margin-bottom:3px}.prob .pw{color:var(--fg);margin-bottom:6px}.prob ol{margin:4px 0 6px 18px;padding:0}.prob li{margin:3px 0}.prob .pstep{margin:6px 0}
+.j.bad{background:#ff6b6b24;border-radius:6px;box-shadow:-3px 0 0 var(--bad)}
+.ck{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:13px}.ck .row{margin-bottom:6px}.ck .cm{color:var(--mut);font-size:12px;line-height:1.4;margin:2px 0 8px}
+.ckr{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.ckr small{display:block;color:var(--mut);font-size:11px}
+.ckst{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}.ckst.ok{color:var(--acc);border-color:var(--acc)}.ckst.warn{color:var(--warn);border-color:var(--warn)}.ckst.fail{color:var(--bad);border-color:var(--bad)}.ckst.run{color:var(--org);border-color:var(--org)}
+.cki{grid-column:1/-1;color:var(--warn);font-size:12px;margin:-2px 0 2px 2px}.cki.fail{color:var(--bad)}
+#wiz{position:fixed;inset:0;z-index:50;background:#05070b;display:none;grid-template-columns:minmax(0,1fr) 350px;gap:18px;padding:16px}
+#wiz.open{display:grid}
+#wizbox{position:relative;align-self:center;justify-self:center;width:min(100%,calc((100vh - 32px)*4/3))}
+#wizbox img{width:100%;display:block;border-radius:14px;cursor:crosshair;border:1px solid var(--line)}
+#wizsvg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.wizside{overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.wizside .big{font-size:14px;padding:12px 16px}
+.wizstep{font-size:16px;line-height:1.5;padding:14px 16px;border-radius:14px;background:#4cc2ff1a;border:1px solid #4cc2ff44}
+.wizstep b{color:var(--org)}
+.dots{display:flex;gap:8px;align-items:center}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line)}.dots i.on{background:var(--acc);border-color:var(--acc)}
+#wiz ul{margin:0;padding-left:18px;color:var(--mut);font-size:13px;line-height:1.6}
+.wizx{position:absolute;right:20px;top:18px;z-index:2}
+#toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(560px,92vw)}
+.toast{pointer-events:auto;padding:11px 16px;border-radius:12px;background:#0b1018f2;border:1px solid var(--line);box-shadow:0 8px 30px #0008;font-size:14px;display:flex;gap:10px;align-items:center;animation:ti .2s}
+.toast.err{border-color:var(--bad)}.toast.warn{border-color:var(--warn)}.toast.ok{border-color:var(--acc)}.toast b{font-weight:700}
+@keyframes ti{from{opacity:0;transform:translateY(-8px)}}
+#banner{position:fixed;left:0;right:0;top:0;z-index:99;background:#ff6b6b;color:#1a0000;text-align:center;font-weight:700;padding:8px;display:none}
+.camwrap{position:relative}.camov{position:absolute;inset:0;margin-top:10px;border-radius:12px;background:#05070bdd;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;gap:8px;font-size:14px}
+.camov.on{display:flex}.camov small{color:var(--mut);font-size:12px}.spin{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--warn);border-radius:50%;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.chips2{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.sc{font-size:11px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--mut);background:#0b1018b3}.sc i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--bad)}.sc.on i{background:var(--acc)}.sc.warn i{background:var(--warn)}
+#wizov{position:absolute;inset:0;border-radius:14px;background:#05070bdd;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:18px;text-align:center;padding:20px}#wizov.on{display:flex}
+.wizstep.ok{background:#3ddc9724;border-color:var(--acc)}.wizstep.warn{background:#ffb4541f;border-color:var(--warn)}.camcard{flex:none}.camcard .row{margin-bottom:6px}
+.tabs{display:flex;gap:6px;flex:none}.tab{flex:1;background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:10px;padding:9px;font-weight:700}.tab.on{background:var(--org);color:#1a0d00;border-color:var(--org)}
+.pane{display:none;flex:1;min-height:0;overflow:hidden}.pane.on{display:block}
+.pc .pstat{font-size:13px;padding:9px 11px;border-radius:10px;background:#4cc2ff1a;margin:8px 0;line-height:1.35}
+.pc .pstat.err{background:#ff6b6b24;color:var(--bad)}.pc .pstat.okmsg{background:#3ddc9724}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.g3 button{padding:9px 4px;font-size:12px}.w{width:100%}
+.j{margin:3px 0 !important}
+#modal{position:fixed;inset:0;z-index:70;background:#05070bcc;display:none;align-items:center;justify-content:center}#modal.open{display:flex}
+.mcard{width:min(470px,92vw);max-height:92vh;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.camrow{display:grid;grid-template-columns:1fr;gap:6px}.camrow.two{grid-template-columns:1fr 1fr}
+.camrow img{width:100%;aspect-ratio:4/3;max-height:24vh;object-fit:contain;background:#000;border-radius:10px;display:block}
+.camrow .camov{margin-top:0}.camlab{position:absolute;left:8px;top:6px;font-size:11px;color:#fff;background:#0009;padding:1px 7px;border-radius:99px;z-index:1;pointer-events:none}
+.tele{pointer-events:auto;display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.tele button{font-weight:700;padding:10px 16px;border-radius:11px;border:1px solid #2fbf71;background:#2fbf71;color:#06210f;cursor:pointer;font-size:13px}
+.tele button:disabled{background:#0b1018b3;border-color:var(--line);color:var(--mut);cursor:not-allowed;font-weight:600}
+.tele button.run{background:#e5484d;border-color:#e5484d;color:#fff}
+.tele span{font-size:12px;color:var(--fg);background:#0b1018b3;padding:4px 10px;border-radius:99px;max-width:340px;line-height:1.3}.tele span.warn{color:#ffb454}.tele span:empty{display:none}
+</style></head><body>
+<div class="app">
+ <div id="stage">
+  <div class="hud title"><h1>SO-101 <b>DIGITAL TWIN</b></h1><div>real SO-101 model · driven live by the motors · drag to orbit · scroll to zoom</div></div>
+  <div class="hud live" style="flex-direction:column;align-items:flex-start;gap:6px"><div style="display:flex;align-items:center;gap:8px"><span class="pulse" id="pulse"></span><span id="livetxt">searching for arms…</span></div><div class="chips2" id="chips2"></div><div class="tele" id="tele"><button id="bTele" disabled>▶ Start leader → follower</button><span id="teleMsg"></span></div></div>
+  <div class="hud" id="loading">LOADING SO-101 MODEL…</div>
+  <div class="hud tools" id="tools">
+   <button id="bSet">⚙ Settings</button><button id="bOrbit">Auto-orbit</button><button id="bReset">Reset view</button></div>
+  <div class="sp" id="sp"></div>
+  <div id="tags"></div><div id="jls"></div>
+ </div>
+ <aside>
+  <div class="camcard card" style="margin:0;padding:10px"><div class="row"><span class="mono" style="margin:0"><span class="dot" id="cd"></span>Camera <span id="cmsg"></span></span></div><div class="camrow" id="camrow"><div class="camwrap"><span class="camlab" id="camlab1" style="display:none">Camera 1</span><img id="cam" src="/stream.mjpg" alt="camera 1"><div class="camov" id="camov"></div></div><div class="camwrap" id="cam2wrap" style="display:none"><span class="camlab">Camera 2</span><img id="cam2" alt="camera 2"><div class="camov" id="camov2"></div></div></div></div>
+  <div class="tabs"><button class="tab on" id="tab-pp" onclick="setTab('pp')">Pick &amp; Place</button><button class="tab" id="tab-arms" onclick="setTab('arms')">Arms</button></div>
+  <div class="pane on" id="pane-pp"><div id="pp"></div></div>
+  <div class="pane" id="pane-arms"><div class="chips" id="armsel" style="margin-bottom:8px"></div><div id="arms"><div class="card"><div class="empty">Looking for arms on USB…</div></div></div></div>
+ </aside>
+</div>
+<div id="askbar"></div>
+<div id="modal"><div class="mcard"><div class="row" style="margin-bottom:10px"><b id="mtitle"></b><button class="sm ghost" onclick="closeModal()">✕ Close</button></div><div id="mbody"></div></div></div>
+<div id="wiz"></div><div id="toasts"></div><div id="banner"></div>
+<script src="/vendor/three.min.js"></script><script src="/vendor/OrbitControls.js"></script><script src="/vendor/STLLoader.js"></script><script src="/vendor/Reflector.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const post=(u,b)=>fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)), rad=d=>d*Math.PI/180;
+// Direction conventions (flip a joint here if the twin looks mirrored vs. the real arm).
+const SIGN={shoulder_pan:1,shoulder_lift:1,elbow_flex:1,wrist_flex:1,wrist_roll:1};
+
+/* ---------------- scene ---------------- */
+const stage=$('stage'), renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.8;stage.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x07090d,.0030);
+const camera=new THREE.PerspectiveCamera(38,1,5,700);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=.07;controls.maxPolarAngle=Math.PI*.495;controls.minDistance=30;controls.maxDistance=160;
+controls.autoRotate=false;controls.autoRotateSpeed=.7;
+const HOME={p:new THREE.Vector3(0,66,150),t:new THREE.Vector3(0,16,0)};
+function resetView(){camera.position.copy(HOME.p);controls.target.copy(HOME.t)}resetView();
+
+scene.add(new THREE.HemisphereLight(0xe2eeff,0x3a2a18,1.6));
+const sun=new THREE.DirectionalLight(0xffffff,1.7);sun.position.set(40,90,50);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-60,right:60,top:60,bottom:-60,near:10,far:260});sun.shadow.radius=5;sun.shadow.bias=-.0004;scene.add(sun);
+const rim=new THREE.PointLight(0xff8a1f,1.2,260);rim.position.set(-50,14,-40);scene.add(rim);
+const fill=new THREE.PointLight(0x4cc2ff,.6,260);fill.position.set(60,20,-50);scene.add(fill);
+
+const sky=new THREE.Mesh(new THREE.SphereGeometry(600,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,
+ uniforms:{top:{value:new THREE.Color()},hor:{value:new THREE.Color()}},
+ vertexShader:'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+ fragmentShader:'uniform vec3 top;uniform vec3 hor;varying vec3 p;void main(){float h=clamp(normalize(p).y,0.,1.);gl_FragColor=vec4(mix(hor,top,pow(h,.5)),1.);}'}));scene.add(sky);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(400,64),new THREE.MeshStandardMaterial({color:0x1f2a3b,roughness:.85,metalness:.1}));
+floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+let grid=null,fine=null,mirror=null,tableY=0;
+function setTableY(y){if(Math.abs(y-tableY)<.01)return;tableY=y;floor.position.y=y;if(grid)grid.position.y=y+.25;if(fine)fine.position.y=y+.12;catcher.position.y=y+.06;if(mirror)mirror.position.y=y-.05}
+const catcher=new THREE.Mesh(new THREE.CircleGeometry(300,48),new THREE.ShadowMaterial({opacity:.5}));catcher.rotation.x=-Math.PI/2;catcher.position.y=.06;catcher.receiveShadow=true;catcher.visible=false;scene.add(catcher);
+function makeGrids(th){[grid,fine].forEach(g=>g&&scene.remove(g));
+ grid=new THREE.GridHelper(400,40,th.grid,th.grid);grid.position.y=.25+tableY;grid.material.transparent=true;grid.material.opacity=th.gridA;scene.add(grid);
+ fine=new THREE.GridHelper(400,200,th.fine,th.fine);fine.position.y=.12+tableY;fine.material.transparent=true;fine.material.opacity=.5;scene.add(fine)}
+const reachRing=()=>{const g=new THREE.Group();
+ const r=new THREE.Mesh(new THREE.RingGeometry(37.6,38.2,128),new THREE.MeshBasicMaterial({color:0xff8a1f,transparent:true,opacity:.55,side:THREE.DoubleSide}));
+ const f=new THREE.Mesh(new THREE.CircleGeometry(38,96),new THREE.MeshBasicMaterial({color:0xff8a1f,transparent:true,opacity:.05}));
+ g.add(r,f);g.rotation.x=-Math.PI/2;g.position.y=.4;return g};
+
+/* ---------------- real SO-101 model (official URDF + STL, Apache-2.0) ---------------- */
+const ASSET='/assets/so101/';
+const stlLoader=new THREE.STLLoader(), stlCache=new Map();
+const loadSTL=f=>{f=f.split('/').pop();if(!stlCache.has(f))stlCache.set(f,new Promise((ok,no)=>stlLoader.load(ASSET+f,ok,undefined,no)));return stlCache.get(f)};
+const urdfP=fetch(ASSET+'so101_new_calib.urdf').then(r=>r.text()).then(t=>new DOMParser().parseFromString(t,'text/xml'));
+const nums=s=>(s||'0 0 0').trim().split(/\s+/).map(Number);
+function setOrigin(o,el){if(!el)return;const p=nums(el.getAttribute('xyz')),r=nums(el.getAttribute('rpy'));o.position.set(...p);o.rotation.set(r[0],r[1],r[2],'ZYX')}
+const kid=(el,tag)=>[...el.children].filter(c=>c.tagName===tag);
+async function buildArm(ghost){
+ const doc=await urdfP;
+ const shell=ghost?new THREE.MeshBasicMaterial({color:0xff8a1f,transparent:true,opacity:.18,depthWrite:false})
+  :new THREE.MeshStandardMaterial({color:0xf2f4f7,roughness:.4,metalness:.08,emissive:0x000000});
+ if(!ghost){shell.color.setHex(ARMS[S.arm]||0xf2f4f7);shells.push(shell)}
+ const dark=ghost?shell:new THREE.MeshStandardMaterial({color:0x14171d,roughness:.5,metalness:.35});
+ const root=new THREE.Group(), zup=new THREE.Group();zup.rotation.x=-Math.PI/2;zup.scale.setScalar(100);root.add(zup);
+ const links={};
+ [...doc.documentElement.children].filter(e=>e.tagName==='link').forEach(l=>{
+  const g=new THREE.Group();links[l.getAttribute('name')]=g;
+  kid(l,'visual').forEach(v=>{
+   const mesh=kid(v,'geometry')[0]?.querySelector('mesh');if(!mesh)return;
+   const mat=kid(v,'material')[0]?.getAttribute('name'),holder=new THREE.Group();setOrigin(holder,kid(v,'origin')[0]);g.add(holder);
+   loadSTL(mesh.getAttribute('filename')).then(geo=>{const m=new THREE.Mesh(geo,mat==='3d_printed'?shell:dark);m.castShadow=!ghost;m.receiveShadow=!ghost;holder.add(m)})})});
+ const joints={},children=new Set();
+ [...doc.documentElement.children].filter(e=>e.tagName==='joint').forEach(j=>{
+  const parent=links[kid(j,'parent')[0].getAttribute('link')],cn=kid(j,'child')[0].getAttribute('link'),child=links[cn];children.add(cn);
+  const og=new THREE.Group();setOrigin(og,kid(j,'origin')[0]);parent.add(og);
+  const rotor=new THREE.Group();og.add(rotor);rotor.add(child);
+  if(j.getAttribute('type')==='revolute'){const lim=kid(j,'limit')[0];
+   joints[j.getAttribute('name')]={rotor,axis:new THREE.Vector3(...nums(kid(j,'axis')[0].getAttribute('xyz'))).normalize(),lo:+lim.getAttribute('lower'),hi:+lim.getAttribute('upper')}}});
+ zup.add(links[Object.keys(links).find(n=>!children.has(n))]);
+ root.userData={joints,tip:links['gripper_frame_link'],shell};return root}
+function applyPose(root,c){const J=root.userData.joints;
+ const set=(n,a)=>{const j=J[n];if(j)j.rotor.quaternion.setFromAxisAngle(j.axis,a)};
+ for(const n in SIGN)set(n,rad(SIGN[n]*(c[n]||0)));
+ const g=J.gripper;if(g)set('gripper',g.lo+clamp((c.gripper||0)/100,0,1)*(g.hi-g.lo))}
+
+/* ---------------- extras: sonar pulses, dust ---------------- */
+const JN=['shoulder_pan','shoulder_lift','elbow_flex','wrist_flex','wrist_roll','gripper'];
+const SHORT={shoulder_pan:'PAN',shoulder_lift:'LIFT',elbow_flex:'ELBOW',wrist_flex:'WRIST',wrist_roll:'ROLL',gripper:'GRIP'};
+const pulses=[];function addPulses(x,z){for(let i=0;i<3;i++){const m=new THREE.Mesh(new THREE.RingGeometry(1,1.12,96),new THREE.MeshBasicMaterial({color:0xff8a1f,transparent:true,side:THREE.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.45,z);scene.add(m);pulses.push({m,off:i/3})}}
+const DUST=360,dg=new THREE.BufferGeometry(),dp=new Float32Array(DUST*3);
+for(let i=0;i<DUST;i++){const a=Math.random()*6.283,r=15+Math.random()*95;dp.set([Math.cos(a)*r,Math.random()*70,Math.sin(a)*r],i*3)}
+dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+const dust=new THREE.Points(dg,new THREE.PointsMaterial({size:.6,transparent:true,opacity:.6,depthWrite:false,color:0xffb060}));dust.visible=false;scene.add(dust);
+
+/* ---------------- arms in the scene ---------------- */
+const shells=[];
+const TRAIL=140;let sim=[],loaded=0;
+const targets=[], ZERO={shoulder_pan:0,shoulder_lift:0,elbow_flex:0,wrist_flex:0,wrist_roll:0,gripper:0};
+function rebuild(roles){const n=roles.length;
+ sim.forEach(s=>{[s.root,s.ghost,s.trail.line,s.ring].forEach(o=>o&&scene.remove(o))});pulses.forEach(p=>scene.remove(p.m));pulses.length=0;shells.length=0;sim=[];loaded=0;$('loading').style.display='block';
+ for(let k=0;k<n;k++){
+  const side=S.layout==='side',x=side?(n===1?0:(roles[k]==='leader'?-40:40)):0,z=side?0:(k-(n-1)/2)*70,yaw=side?Math.PI/2:0;
+  const s={root:null,ghost:null,x,z,v:0,c:{...ZERO,gripper:0}};
+  const geo=new THREE.BufferGeometry(),pos=new Float32Array(TRAIL*3),col=new Float32Array(TRAIL*3);
+  for(let i=0;i<TRAIL;i++){const f=i/(TRAIL-1);col[i*3]=f;col[i*3+1]=.54*f;col[i*3+2]=.12*f}
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  s.trail={line:new THREE.Line(geo,new THREE.LineBasicMaterial({vertexColors:true})),pos,n:0};s.trail.line.frustumCulled=false;scene.add(s.trail.line);
+  s.ring=reachRing();s.ring.position.x=x;s.ring.position.z=z;scene.add(s.ring);addPulses(x,z);sim.push(s);
+  Promise.all([buildArm(false),buildArm(true)]).then(([r,g])=>{r.position.set(x,0,z);g.position.set(x,0,z);r.rotation.y=g.rotation.y=yaw;scene.add(r,g);s.root=r;s.ghost=g;applyPose(g,ZERO);
+   if(++loaded===sim.length)$('loading').style.display='none'}).catch(e=>{$('loading').textContent='MODEL FAILED TO LOAD: '+e})}
+ $('tags').innerHTML=sim.map((_,k)=>`<div class="tag3d" id="tag${k}"></div>`).join('');
+ $('jls').innerHTML=sim.map((_,k)=>JN.map(j=>`<div class="jl" id="jl${k}${j}"></div><div class="jm" id="jm${k}${j}"></div>`).join('')).join('')}
+const tmp=new THREE.Vector3();
+function frame(){
+ requestAnimationFrame(frame);controls.update();
+ sim.forEach((s,k)=>{if(!s.root)return;const t=targets[k];
+  if(t){let move=0;const kk=performance.now()-poseT<500?.55:.28;for(const j in s.c){const d=t[j]-s.c[j];s.c[j]+=d*kk;move+=Math.abs(d)}s.v+=(move-s.v)*.2}
+  applyPose(s.root,s.c);const e=Math.min(.55,s.v*.02);s.root.userData.shell.emissive.setRGB(e,e*.38,0);
+  s.ghost.visible=S.ghost;
+  const tr=s.trail;s.root.userData.tip.getWorldPosition(tmp);
+  if(S.trail){if(tr.n===0)for(let i=0;i<TRAIL;i++)tr.pos.set([tmp.x,tmp.y,tmp.z],i*3);tr.n=1;
+   tr.pos.copyWithin(0,3);tr.pos.set([tmp.x,tmp.y,tmp.z],(TRAIL-1)*3);tr.line.geometry.attributes.position.needsUpdate=true}tr.line.visible=S.trail;
+  const tag=$('tag'+k);if(tag){tmp.set(s.root.position.x,40,s.z).project(camera);
+   tag.style.left=((tmp.x+1)/2*stage.clientWidth)+'px';tag.style.top=((1-tmp.y)/2*stage.clientHeight)+'px';tag.style.display=tmp.z<1?'block':'none'}
+  JN.forEach(jn=>{const el=$('jl'+k+jn);if(!el)return;const j=s.root.userData.joints[jn];
+   const bad=!!(BADJ[k]&&BADJ[k].has(jn)),tst=TESTJ[k]===jn;
+   const jm=$('jm'+k+jn);if((!S.labels&&!bad&&!tst)||!j){el.style.display='none';if(jm)jm.style.display='none';return}
+   j.rotor.getWorldPosition(tmp);tmp.project(camera);el.className='jl'+(bad?' bad'+(((tmp.x+1)/2*stage.clientWidth>stage.clientWidth-280)||(JN.indexOf(jn)%2===1&&(tmp.x+1)/2*stage.clientWidth>280)?' flip':''):tst?' test':'');el.style.display=tmp.z<1?'block':'none';el.style.left=((tmp.x+1)/2*stage.clientWidth)+'px';el.style.top=((1-tmp.y)/2*stage.clientHeight)+'px';if(jm){jm.style.display=(bad||tst)&&tmp.z<1?'block':'none';jm.style.left=el.style.left;jm.style.top=el.style.top;jm.style.borderColor=bad?'':'var(--org)'}
+   const v=jn==='gripper'?Math.round(s.c.gripper)+'%':(s.c[jn]>=0?'+':'')+s.c[jn].toFixed(0)+'°';el.innerHTML=bad?`<b>⚠ ${SHORT[jn]} ${v}</b><span class="bm">${(()=>{const T=[...new Set(BADJ[k].get(jn))];return T.slice(0,2).join('<br>')+(T.length>2?'<br>+'+(T.length-2)+' more (see How to fix)':'')})()}</span>`:`<b>${tst?'▶ ':''}${SHORT[jn]}</b>${tst?'testing':v}`})});
+ const t=performance.now()/1000;
+ pulses.forEach(p=>{p.m.visible=S.pulse;const ph=((t/3.6)+p.off)%1;p.m.scale.setScalar(4+ph*44);p.m.material.opacity=(1-ph)*(1-ph)*.6});
+ sim.forEach(s=>s.ring.visible=S.reach);
+ dust.visible=S.dust;if(S.dust){const a=dg.attributes.position;for(let i=0;i<DUST;i++){let y=a.array[i*3+1]+.03*(1+(i%5)*.3);if(y>72)y=0;a.array[i*3+1]=y}a.needsUpdate=true;dust.rotation.y=t*.02}
+ if(tween){const k=Math.min(1,(performance.now()-tween.t0)/900),e=k*k*(3-2*k);camera.position.lerpVectors(tween.p0,tween.p1,e);controls.target.lerpVectors(tween.q0,tween.q1,e);if(k>=1)tween=null}
+ renderer.render(scene,camera)}
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(stage);resize();
+$('bOrbit').onclick=e=>{controls.autoRotate=!controls.autoRotate;e.target.classList.toggle('on',controls.autoRotate)};
+$('bReset').onclick=resetView;
+renderer.domElement.addEventListener('pointerdown',()=>{controls.autoRotate=false;$('bOrbit').classList.remove('on')});
+
+/* ---------------- sidebar: arms, calibration ---------------- */
+let sig='';
+let VIZ={flip:{},offset:{}};   // per-joint tweaks saved on the server so the twin matches how YOUR arm is mounted
+const STEPS=[['center','1 · Centre','Put the arm mid-range'],['sweep','2 · Sweep','Move every joint fully'],['done','3 · Save','Written to LeRobot']];
+function stepper(c){const idx=STEPS.findIndex(s=>s[0]===c.step);
+ return `<div class="steps">${STEPS.map((s,k)=>`<div class="st ${k<idx||c.step==='done'?'ok':k===idx?'cur':''}"><b>${s[1]}</b>${s[2]}</div>`).join('')}</div>`}
+function joints(a,n){return a.joints.map(j=>`<div class="j"><span>${j.name}${j.ignored?' <small style="color:var(--warn)">ignored: shown, not driven</small>':''}</span><b id="d${n}${j.id}">—</b><em id="v${n}${j.id}">—</em></div>`).join('')}
+function pickRange(a,j){const c=a.calib;
+ if(c.step==='sweep'&&c.ranges&&c.ranges[j.name])return c.ranges[j.name];
+ return a.cal&&a.cal[j.name]||null}
+function paint(a,n){
+ const deg={...ZERO};
+ a.joints.forEach(j=>{const [pv,r]=j.pos==null?[null,pickRange(a,j)]:viewRaw(a,j,j.pos),mid=r?(r[0]+r[1])/2:2047.5,p=pv??mid,d=(p-mid)*360/4095,f=VIZ.flip[j.name]?-1:1,off=VIZ.offset[j.name]||0;
+  if(j.name==='gripper'){const pct=(r?clamp((p-r[0])/Math.max(1,r[1]-r[0]),0,1):p/4095)*100;deg.gripper=f<0?100-pct:pct}else deg[j.name]=j.name==='wrist_roll'?rollUnwrap(n,f*d+off):f*d+off;
+  const de=$(`d${n}${j.id}`),v=$(`v${n}${j.id}`),sp=r?Math.round((r[1]-r[0])*360/4095):0;
+  {const row=de&&de.closest('.j');if(row)row.classList.toggle('bad',!!(BADJ[n]&&BADJ[n].has(j.name)))}
+  if(de)de.textContent=j.pos==null?'—':j.name==='gripper'?Math.round(deg.gripper)+'% open':(d>=0?'+':'')+d.toFixed(1)+'°';
+  if(v)v.textContent=a.calib.step==='sweep'?`span ${sp}°`:`${j.pos??'—'} · ${j.load!=null?Math.round(Math.abs(j.load)/10)+'%':''}${j.temp>=60?' 🔥':''}`});
+ if(performance.now()-poseT>=500)targets[n]=deg;
+ const tg=$('tag'+n);if(tg)tg.innerHTML=`<i>●</i>${a.role.toUpperCase()}${a.calibrated?' · calibrated':''}${(a.problems||[]).length?` · <span style="color:#ff8f8f">⚠ ${a.problems.length} problem${a.problems.length>1?'s':''}</span>`:''}`}
+const viz=(joint,patch)=>post('/api/viz',{joint,...patch}).then(()=>{sig=''});
+function askYes(msg,yes,fn){const b=$('askbar');b.innerHTML=`<div class="askbox"><div>${msg}</div><div class="askbtn"><button id="askyes">${yes}</button><button class="ghost" id="askno">Cancel</button></div></div>`;b.classList.add('on');$('askyes').onclick=()=>{b.classList.remove('on');fn()};$('askno').onclick=()=>b.classList.remove('on')}
+const act=(n,a,msg)=>{const go=()=>post('/api/calib/'+n+'/'+a);msg?askYes(msg,'Yes',go):go()};
+function body(a,n){const c=a.calib;
+ if(a.remote)return '<div class="mono">Live from the Mac · view only</div>';
+ if(c.step==='idle')return `<div class="row" style="margin-top:8px">
+   <button ${a.online&&!a.wiggling?'':'disabled'} onclick="act(${n},'start')">Calibrate</button>
+   <button class="ghost sm" ${a.has_default&&a.online?'':'disabled'} onclick="act(${n},'restore','Restore the saved DEFAULT calibration onto the motors? This replaces the current calibration.')">Restore default</button>
+   <button class="ghost sm" ${a.calibrated?'':'disabled'} onclick="act(${n},'set_default','Make the CURRENT calibration the new default?')">Set as default</button>
+   <button class="ghost sm" ${a.online&&!a.wiggling?'':'disabled'} onclick="post('/api/wiggle/${n}')">${a.wiggling?'Moving…':'Wiggle'}</button><button class="ghost sm" onclick="openTune(${n})">Match 3D…</button>${a.role==='follower'&&!a.remote?`<button class="ghost sm" onclick="openCheck(${n})">Check joints…</button>`:''}${a.role==='leader'&&!a.remote?`<button class="ghost sm" onclick="openAlign()">Align arms…</button>`:''}</div>`;
+ let h=stepper(c);
+ if(c.step==='center')h+=`<div class="hint">The arm is <b>limp</b>. Move it by hand to the <b>middle of its range</b>, then continue.</div>
+  <div class="row"><button onclick="post('/api/calib/${n}/center')">It's centred →</button><button class="ghost" onclick="post('/api/calib/${n}/cancel')">Cancel</button></div>`;
+ if(c.step==='sweep')h+=`<div class="hint">Move <b>every joint</b> slowly through its <b>full range</b> (wrist roll spins freely). Watch the twin mirror you; each joint's <b>span</b> grows as you go.</div>
+  ${c.error?`<div class="hint err">${c.error}</div>`:''}
+  <div class="row"><button onclick="post('/api/calib/${n}/finish')">Done — save calibration</button><button class="ghost" onclick="post('/api/calib/${n}/cancel')">Cancel</button></div>`;
+ if(c.step==='done')h+=`<div class="hint okmsg">✅ Calibrated <b>${c.role}</b> <code>${c.id}</code><div class="mono">${c.saved}</div></div>
+  <div class="row"><button onclick="post('/api/calib/${n}/cancel')">Done</button></div>`;
+ return h}
+/* ---------------- settings: look & feel (saved in this browser) ---------------- */
+const ARMS={white:0xf2f4f7,original:0xffd11f,carbon:0x2a2e35,orange:0xff8a1f,blue:0x4cc2ff};
+const THEMES={
+ studio:{label:'Studio',top:'#07090d',hor:'#18222f',floor:0x1f2a3b,grid:0xff8a1f,gridA:.55,fine:0x2a3446,accent:'#ff8a1f',hemi:1.6},
+ daylight:{label:'Daylight',top:'#7fa9dc',hor:'#e6eef8',floor:0xdde4ec,grid:0x2f7de1,gridA:.45,fine:0xb6c2d1,accent:'#2f7de1',hemi:1.2},
+ blueprint:{label:'Blueprint',top:'#0a2a5e',hor:'#13408a',floor:0x0d3270,grid:0xcfe3ff,gridA:.6,fine:0x2f5aa8,accent:'#7fd1ff',hemi:1.3},
+ carbon:{label:'Carbon',top:'#040404',hor:'#161616',floor:0x101010,grid:0x3ddc97,gridA:.5,fine:0x1d1d1d,accent:'#3ddc97',hemi:1.4},
+ sunset:{label:'Sunset',top:'#1b1033',hor:'#e9824a',floor:0x2a1b2e,grid:0xffc46b,gridA:.5,fine:0x3a2a40,accent:'#ff6b9a',hemi:1.5}};
+const VIEWS={orbit:null,hero:[[0,66,150],[0,16,0]],top:[[0.1,150,0.1],[0,0,0]],side:[[115,28,0],[0,18,0]],front:[[0,30,120],[0,18,0]],close:[[34,30,48],[0,20,0]]};
+const SET0={theme:'studio',arm:'white',floor:'grid',view:'hero',layout:'side',bright:1,labels:true,ghost:true,trail:true,reach:true,pulse:false,dust:false};
+let S={...SET0},tween=null;
+try{S={...SET0,...JSON.parse(localStorage.getItem('so101-ui')||'{}')}}catch(e){}
+const hemi=scene.children.find(o=>o.isHemisphereLight);
+function applyLook(){
+ const th=THEMES[S.theme]||THEMES.studio;
+ sky.material.uniforms.top.value.set(th.top);sky.material.uniforms.hor.value.set(th.hor);scene.fog.color.set(th.hor);scene.fog.density=S.theme==='daylight'?.0016:.0030;
+ floor.material.color.setHex(th.floor);hemi.intensity=th.hemi;makeGrids(th);
+ document.documentElement.style.setProperty('--org',th.accent);
+ pulses.forEach(p=>p.m.material.color.set(th.accent));dust.material.color.set(th.accent);
+ renderer.toneMappingExposure=1.8*S.bright;
+ shells.forEach(m=>m.color.setHex(ARMS[S.arm]));
+ floor.visible=S.floor!=='mirror';catcher.visible=S.floor==='mirror';
+ if(S.floor==='mirror'){if(!mirror){mirror=new THREE.Reflector(new THREE.CircleGeometry(400,64),{color:0x56657a,textureWidth:512,textureHeight:512,clipBias:.003});mirror.rotation.x=-Math.PI/2;mirror.position.y=-.05;scene.add(mirror)}mirror.visible=true}else if(mirror)mirror.visible=false;
+ grid.visible=S.floor==='grid';fine.visible=S.floor==='grid'||S.floor==='fine'}
+function goView(v){S.view=v;const d=VIEWS[v];
+ if(!d){controls.autoRotate=true;$('bOrbit').classList.add('on');return}
+ controls.autoRotate=false;$('bOrbit').classList.remove('on');
+ tween={t0:performance.now(),p0:camera.position.clone(),q0:controls.target.clone(),p1:new THREE.Vector3(...d[0]),q1:new THREE.Vector3(...d[1])}}
+const saveS=()=>{try{localStorage.setItem('so101-ui',JSON.stringify(S))}catch(e){}};
+const chip=(k,v,label)=>`<button class="chip ${S[k]===v?'on':''}" onclick="setS('${k}','${v}')">${label}</button>`;
+const tog=(k,label)=>`<button class="chip ${S[k]?'on':''}" onclick="setS('${k}',${!S[k]})">${label}</button>`;
+function setS(k,v){S[k]=v;saveS();if(k==='view')goView(v);if(k==='layout')rebuild(lastRoles);applyLook();renderSettings()}
+function renderSettings(){$('sp').innerHTML=`<h3>Look &amp; feel</h3>
+ <div class="g">Theme</div><div class="chips">${Object.entries(THEMES).map(([k,t])=>chip('theme',k,t.label)).join('')}</div>
+ <div class="g">Arm colour</div><div class="chips">${Object.keys(ARMS).map(k=>chip('arm',k,k[0].toUpperCase()+k.slice(1))).join('')}</div>
+ <div class="g">Floor</div><div class="chips">${[['grid','Grid'],['fine','Fine grid'],['plain','Plain'],['mirror','Glossy mirror']].map(([k,l])=>chip('floor',k,l)).join('')}</div>
+ <div class="g">Arm layout</div><div class="chips">${[['side','Leader left · Follower right'],['depth','Stacked (original)']].map(([k,l])=>chip('layout',k,l)).join('')}</div>
+ <div class="g">Camera angle</div><div class="chips">${[['orbit','Orbit'],['hero','Hero'],['top','Top-down'],['side','Side'],['front','Front'],['close','Close-up']].map(([k,l])=>chip('view',k,l)).join('')}</div>
+ <div class="g">Brightness</div><input type="range" min=".6" max="1.6" step=".05" value="${S.bright}" oninput="S.bright=+this.value;saveS();applyLook()">
+ <div class="g">Show</div><div class="chips">${tog('labels','Joint-angle labels')}${tog('ghost','Mid-pose ghost')}${tog('trail','Gripper trail')}${tog('reach','Reach ring')}${tog('pulse','Sonar pulses')}${tog('dust','Floating dust')}</div>
+ <div class="row" style="margin-top:14px"><button class="chip" onclick="S={...SET0};saveS();applyLook();goView('orbit');renderSettings()">Reset to defaults</button></div>`}
+$('bSet').onclick=e=>{const el=$('sp'),show=el.style.display!=='block';el.style.display=show?'block':'none';e.target.classList.toggle('on',show);if(show)renderSettings()};
+applyLook();if(S.view==='orbit')goView('orbit');else{const d=VIEWS[S.view];camera.position.set(...d[0]);controls.target.set(...d[1]);controls.autoRotate=false}
+frame();
+
+
+/* ---- guided table mapping (full-screen, big camera) ---- */
+let wizBuilt=false,lastPP=null;
+function wizBuild(){$('wiz').innerHTML=`<div id="wizbox"><img id="wizimg" src="/stream.mjpg" alt="camera"><svg id="wizsvg" viewBox="0 0 640 480"></svg><div id="wizov"></div></div>
+ <div class="wizside"><div class="row"><b style="font-size:18px">Map the table</b><button class="sm ghost" onclick="wizClose()">✕ Close</button></div>
+  <div class="wizstep" id="wiztext"></div>
+  <div style="height:12px;border-radius:7px;background:var(--line);overflow:hidden"><i id="wizhold" style="display:block;height:100%;width:0;background:var(--acc);transition:width .15s"></i></div>
+  <div class="row"><span id="wizcount" style="font-size:16px;font-weight:700"></span><div class="dots" id="wizdots"></div></div>
+  <div class="chips2" id="wizchips"></div>
+  <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="big" id="wizlimpbtn" onclick="ppAct('rest')">Make arm limp</button><button class="big ghost" onclick="ppAct('undo')">Undo last point</button><button class="big ghost" onclick="ppAct('clear')">Remove all old points</button></div>
+  <button class="big" id="wizdone" onclick="wizClose()">Done</button>
+  <details><summary>Which part touches the table?</summary>
+   <svg viewBox="0 0 220 110" style="width:100%;max-height:100px"><rect x="8" y="10" width="96" height="28" rx="10" fill="#cfd6df"/><polygon points="96,12 188,78 176,90 92,42" fill="#f2f4f7" stroke="#8497ad"/><polygon points="108,36 186,86 176,94 100,52" fill="#aab4c2" stroke="#8497ad"/><circle cx="183" cy="88" r="8" fill="#ff8a1f"/><text x="150" y="108" fill="#ff8a1f" font-size="12" font-weight="700">THIS TIP</text></svg>
+   <div class="mono">Close the gripper so the two jaw tips meet. That point touches the table, at the middle of the red keychain. Spread the spots out: near the tray, near the bowl, and the middle.</div></details></div>`;
+ $('wizbox').onclick=e=>{const im=$('wizimg'),r=im.getBoundingClientRect();post('/api/pp/teach',{u:(e.clientX-r.left)/r.width*640,v:(e.clientY-r.top)/r.height*480})};wizBuilt=true}
+function wizOpen(){if(!wizBuilt)wizBuild();$('wiz').classList.add('open');ppAct('auto',{on:true});wizUpdate(lastPP)}
+function wizClose(){$('wiz').classList.remove('open');ppAct('auto',{on:false})}
+function wizUpdate(p){if(!p||!$('wiz').classList.contains('open')||!$('wiztext'))return;const A=p.auto||{},n=p.taught,why=!p.limp?'limp':(A.why||'move'),fresh=A.saved_at&&(Date.now()/1000-A.saved_at)<4;
+ let t,cls='';
+ if(why==='limp'){t='<b>Step 1.</b> Press <b>Make arm limp</b> below. The arm lowers itself first: you do not need to hold it, and nothing is asked of you until it says it is limp.'}
+ else if(fresh){t=`<b>✓ Spot ${A.n||n} saved.</b> ${n>=3?'You can press <b>Done</b>, or add one more.':'Now move the keychain to a <b>new spot</b> and touch it again.'}`;cls='ok'}
+ else if(why==='tilt'){t=`<b>Tilt the gripper more DOWN.</b><br>It is at <b>${A.tilt}°</b>; it needs to be under <b>50°</b>.`;cls='warn'}
+ else if(why==='kc'){t='<b>I can\'t see the keychain.</b> Lay it flat on the table where the camera can see it.';cls='warn'}
+ else if(why==='height'){t=`<b>The tip is ${Math.abs(A.dz)} mm ${A.dz>0?'above':'below'} the earlier spots.</b> Touch the table with the tip.`;cls='warn'}
+ else if(why==='dup'){t='<b>Already saved here.</b> Move the keychain (and the arm) to a <b>new spot</b>, at least 4 cm away.';cls='warn'}
+ else if(why==='hold'){t='<b>Hold still…</b>'}
+ else if(why==='error'){t='<b>Problem:</b> '+(A.err||'');cls='warn'}
+ else{t=`<b>Spot ${Math.min(n+1,4)}.</b> Keychain flat on the table. Gripper <b>closed, pointing down</b>, tip on the keychain's middle. Hold still.`}
+ $('wiztext').className='wizstep '+cls;$('wiztext').innerHTML=t;
+ $('wizhold').style.width=Math.round((A.holding||0)*100)+'%';
+ $('wizcount').textContent=n<3?`${n} of 3 spots`:`${n} spots ✓`;$('wizdots').innerHTML=[0,1,2,3].map(i=>`<i class="${i<n?'on':''}"></i>`).join('');
+ const c=(ok,label)=>`<span class="sc ${ok?'on':'warn'}"><i></i>${label}</span>`;
+ $('wizchips').innerHTML=c(p.limp,'Arm limp')+c(A.kc==='seen'||A.kc==='hidden','Keychain '+(A.kc==='hidden'?'under gripper':A.kc==='seen'?'seen':'not seen'))+c((A.tilt||0)<=50,'Tilt '+(A.tilt==null?'–':A.tilt+'°'))+(p.fit_mm!=null?`<span class="sc on"><i></i>Fit ${p.fit_mm.toFixed(1)} mm</span>`:'');
+ $('wizlimpbtn').disabled=p.limp;$('wizlimpbtn').style.display=p.limp?'none':'block';$('wizdone').disabled=n<3;$('wizsvg').innerHTML=''}
+
+/* ---- pick & place card ---- */
+let ppMode='',ppSig='';
+$('cam').style.cursor='crosshair';
+$('cam').onclick=e=>{const r=e.target.getBoundingClientRect(),u=(e.clientX-r.left)/r.width*e.target.naturalWidth,v=(e.clientY-r.top)/r.height*e.target.naturalHeight;
+ if(ppMode==='tray'||ppMode==='bowl'){post('/api/pp/zone',{name:ppMode,u,v});ppMode='';ppSig=''}};
+const ppAct=(a,b)=>post('/api/pp/'+a,b||{});
+const ppSet=(k,v)=>post('/api/pp/param',{k,v});
+const chkText=c=>!c?'':({ok:', not moved since',moved:`, MOVED about ${c.shift_px} px since`,noref:', no reference picture yet',unsure:', movement cannot be told',nopic:', no picture'}[c.state]||'')+(c.state==='ok'||c.state==='moved'?' calibration':'');
+function ppCard(p){const z=p.zones,mapped=p.taught>=3,st=p.status||'idle';
+ const wait=p.running?'a job is running: press Stop first':(teleOn?'leader → follower is running: stop it first':'');
+ const rHover=wait||(!p.ready?(p.why||'not ready'):''),rBowl=wait||(p.ready_bowl?'':(p.why_bowl||'not ready')),rLoop=rHover,rStop=p.running?'':'nothing is running right now',rStop2=p.running?'a job is running: press Stop first':'',rRel=p.limp?'the arm is already limp (torque is off)':(p.running?'a job is running: press Stop first':'');
+ const bt=(label,cls,on,reason)=>`<button class="sm ${cls}" ${reason?`disabled title="${esc(reason)}"`:''} onclick="${on}">${label}</button>`;
+ const rScr=wait||(p.why_screen||'');
+ const grp={};[['Screensaver',rScr],['Hover test',rHover],['Keychain → bowl',rBowl],['Loop',rLoop],['Stop',rStop],['Release arm',rRel],['Re-map the table',wait],['Remove old points',wait],['Align the arm',wait]].forEach(([l,r])=>{if(r)(grp[r]=grp[r]||[]).push(l)});
+ const why=Object.entries(grp).map(([r,l])=>`<b>${l.join(', ')}</b> greyed out: ${esc(r)}`).join('<br>');
+ const aligned=p.align&&p.align.undo;
+ const arm=ppMode?`<div class="pstat" style="background:#ff8a1f22">Click the <b>${ppMode}</b> in the camera picture above.</div>`:'';
+ return `<div class="card pc"><div class="row"><h2>Pick &amp; Place</h2><span class="badge ${p.ready?'ok':'no'}">${p.ready?'ready':'not ready'}</span></div>
+ <div class="pstat ${st.startsWith('error')||st.startsWith('✗')||(p.why&&p.why.startsWith('Not picking'))?'err':st.includes('goal reached')?'okmsg':''}">${esc(st)}${!p.ready&&!p.running&&p.why?' · '+esc(p.why):''}</div>${arm}
+ <button class="big w" ${wait?'disabled title="'+esc(wait)+'"':''} onclick="wizOpen()">${mapped?'Re-map the table':'1 · Map the table'}${mapped&&p.fit_mm!=null?` (fit ${p.fit_mm.toFixed(1)} mm)`:''}</button>
+ ${p.cam_cal&&p.taught>0?`<div class="whyoff">These table points are camera 1's table map (made by <b>Tune…</b> then <b>Scan the table</b>, or by hand). If camera 1 was moved, scan the table again.</div>`:''}
+ ${p.taught>0?`<button class="sm ghost" style="width:100%;margin-top:6px" ${wait?'disabled title="'+esc(wait)+'"':''} onclick="askYes('Remove all ${p.taught} old table points? Re-map will then start with none. Use this after a camera was moved: old points belong to the old camera position.','Yes, remove them',()=>ppAct('clear'))">Remove the ${p.taught} old points (then Re-map starts fresh)</button>`:''}
+ <button class="big w" style="margin-top:6px;${wait?'':'background:transparent;color:var(--fg);border:1px solid var(--org)'}" ${wait?'disabled title="'+esc(wait)+'"':''} onclick="openModal('Align the arm to the table',()=>alignRow(lastPP))">${aligned?'✓ ':''}Align the arm to the table (once)</button>
+ <div class="g3"><button class="sm ghost ${ppMode==='tray'?'on':''}" onclick="ppMode=ppMode==='tray'?'':'tray';ppSig=''">${z.tray.p?'✓ ':''}Set tray</button><button class="sm ghost ${ppMode==='bowl'?'on':''}" onclick="${p.params.auto_bowl?`ppSet('auto_bowl',0);ppMode='bowl';ppSig=''`:`ppMode=ppMode==='bowl'?'':'bowl';ppSig=''`}">${p.params.auto_bowl?'✓ Bowl: auto':(z.bowl.p?'✓ ':'')+'Set bowl'}</button><button class="sm ghost" onclick="openModal('Fine-tune',()=>ppTuneHtml(lastPP))">Tune…</button></div>
+ <div class="mono" id="ppfound">—</div>
+ <div class="g3">${bt('Hover test','',"ppAct('run',{mode:'hover'})",rHover)}${bt('Keychain → bowl','',"askYes('The arm will move by itself: pick up the keychain and put it in the bowl. TAKE YOUR HANDS OFF THE ARM. Start?','Yes, start',()=>ppAct('run',{mode:'bowl'}))",rBowl)}${bt('Loop','ghost',"askYes('Loop tray ↔ bowl forever? Keep hands clear.','Yes, start',()=>ppAct('run',{mode:'loop',cycles:0}))",rLoop)}</div>
+ <div class="g3">${bt('Find &amp; follow cylinder','',"askYes('The hand lifts, points the gripper down and sweeps across the table looking for the grey cylinder with the hand camera (camera 2). When it finds it, it follows it as it moves. Nothing is gripped. TAKE YOUR HANDS OFF THE ARM. Stop ends it. Start?','Yes, start',()=>ppAct('finder'))",rStop2)}</div>
+ <div class="g3">${bt('Cylinders → bowl','',"askYes('The arm raises to its top position, looks for grey cylinders with camera 1, opens the gripper, picks each one up and drops it in the pink bowl, then looks again, until you press Stop. TAKE YOUR HANDS OFF THE ARM. Start?','Yes, start',()=>ppAct('cylinders'))",rBowl)}${bt('Cylinder dry run','ghost',"askYes('The arm raises to its top position, finds a grey cylinder and only hovers above it (nothing is gripped). Start?','Yes, start',()=>ppAct('cylinders',{dry:1}))",rBowl)}</div>
+ <div class="g3">${bt('Stop','ghost',"ppAct('stop')",rStop)}${bt('Screensaver','ghost',"askYes('The arm will move around by itself to attract attention. Keep clear of it. Press Stop to end it. Start?','Yes, start',()=>ppAct('screensaver'))",rScr)}${bt('Release arm','ghost',"askYes('The arm lowers itself to the table and then goes limp. You do not need to hold it.','Yes, lower and release',()=>ppAct('rest'))",rRel)}<button class="sm ghost" title="Cancels anything running and clears every stuck state; the arm holds where it is" onclick="ppAct('reset')">Reset</button><button class="sm ghost" style="border-color:var(--warn);color:var(--warn)" title="Torque off on every motor right now, without lowering the arm first. Works even when the dashboard cannot see the arm." onclick="askYes('Torque goes OFF on every motor right now. The arm is NOT lowered first, so it can drop: hold the hand, or check that it rests low. Start?','Yes, limp now',()=>ppAct('limp_now'))">Limp now</button></div>${why?`<div class="whyoff">${why}</div>`:''}</div>`}
+const stableP=p=>({...p,why:(p.why||'').replace(/\d+(\.\d+)?/g,'#'),why_bowl:(p.why_bowl||'').replace(/\d+(\.\d+)?/g,'#'),cam_chk:(p.cam_chk||[]).map(c=>c.state),found:0,tilt:0,grip_gap:0,bowl_rim_mm:0,bowl_mm:0,log:0,kc_mm:0,kc_z_mm:0,kc_gap_mm:0,fusion:0,here:0,auto:0,align:p.align?[p.align.n,p.align.undo,p.align.gap_mm<10]:0,cams:(p.cams||[]).map(c=>[c.cal,c.rms]),zones:Object.fromEntries(Object.entries(p.zones||{}).map(([k,v])=>[k,[!!v.p,v.drop]]))});
+function ppRender(p){if(!p)return;lastPP=p;wizUpdate(p);const sg=JSON.stringify(stableP(p))+teleOn;
+ if(sg!==ppSig&&!document.querySelector('#pp button:active')){ppSig=sg;const open=$('pp').querySelector('details')?.open;$('pp').innerHTML=ppCard(p);if(open){const d=$('pp').querySelector('details');if(d)d.open=true}}
+ const f=$('ppfound');if(f)f.textContent=p.fusion?`keychain seen by camera ${p.fusion.cams.join(' + ')}${p.fusion.cams.length>1?` (agree within ${p.fusion.spread_mm} mm)`:''}${p.here?' · in the '+p.here:''}`:(p.found[0]?'keychain seen (camera not calibrated yet)':'keychain not seen')}
+
+/* ---- layout helpers: tabs, pop-ups (nothing scrolls) ---- */
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let armSel='follower',lastS=null,modalFn=null,modalSig='';
+function setTab(t){['pp','arms'].forEach(k=>{$('pane-'+k).classList.toggle('on',k===t);$('tab-'+k).classList.toggle('on',k===t)});try{localStorage.setItem('so101-tab',t)}catch(e){}}
+try{const t=localStorage.getItem('so101-tab');if(t)setTab(t)}catch(e){}
+function openModal(title,fn){modalFn=fn;$('mtitle').textContent=title;$('modal').classList.add('open');modalSig='';renderModal()}
+function closeModal(){$('modal').classList.remove('open');modalFn=null}
+function renderModal(){if(modalFn)$('mbody').innerHTML=modalFn()}
+function tuneArmHtml(n){const a=lastS&&lastS.arms[n];if(!a)return '';
+ return `<div class="mono" style="margin:0 0 8px">Press <b>Test</b>: the real joint nudges a few degrees. If the wrong part of the 3D arm moves or it moves the wrong way, press <b>Flip</b>. If a part is 90°/180° off, use the offset buttons.</div>`+a.joints.map(j=>{const f=VIZ.flip[j.name],o=VIZ.offset[j.name]||0;return `<div class="tune"><span>${j.name}<br><small>${j.name==='gripper'?(f?'inverted':'normal'):`${f?'flipped':'normal'} · offset ${o}°`}</small></span>
+  <span class="b"><button class="sm ghost" ${a.online&&!a.wiggling?'':'disabled'} onclick="post('/api/nudge/${n}/${j.name}')">Test</button><button class="sm ghost ${f?'on':''}" onclick="viz('${j.name}',{flip:${!f}})">Flip</button>
+  ${j.name==='gripper'?'':`<button class="sm ghost" onclick="viz('${j.name}',{offset:${o-90}})">−90°</button><button class="sm ghost" onclick="viz('${j.name}',{offset:${o+90}})">+90°</button><button class="sm ghost" onclick="viz('${j.name}',{offset:0})">0</button>`}</span></div>`}).join('')}
+const openTune=n=>openModal('Match the 3D arm to the real arm',()=>tuneArmHtml(n));
+function alignRow(p){const a=p.align||{n:0,r_mm:[],gap_mm:null,undo:false},have=a.r_mm.map(v=>Math.round(v/10)),has=r=>have.includes(r),limp=p.limp;
+ const rel=`<button class="sm" onclick="askYes('The arm lowers itself to the table and then goes limp. You do not need to hold it.','Yes, lower and release',()=>post('/api/pp/rest'))">Release arm</button>`,rec=r=>`<button class="sm" onclick="post('/api/pp/align',{do:'record',r:${r}})">Record ${r} cm</button>`;
+ const pic=`<svg viewBox="0 0 440 136" style="width:100%;max-width:440px;display:block;margin:8px 0 2px" role="img" aria-label="ruler from the shaft centre and gripper straight down"><rect x="10" y="8" width="200" height="104" rx="4" fill="#1f2a3b" stroke="#51627c" stroke-width=".7"/><rect x="80" y="82" width="36" height="30" rx="3" fill="#33425a" stroke="#8fa0b8" stroke-width=".7"/><circle cx="98" cy="96" r="5" fill="#ff8a1f"/><rect x="95" y="20" width="6" height="76" fill="#8fa0b8" opacity=".5"/><circle cx="98" cy="60" r="4" fill="#3ddc97"/><circle cx="98" cy="42" r="4" fill="#3ddc97"/><circle cx="98" cy="21" r="4" fill="#3ddc97"/><text x="108" y="64" fill="#cfd8e6" font-size="11">12 cm</text><text x="108" y="46" fill="#cfd8e6" font-size="11">17 cm</text><text x="108" y="25" fill="#cfd8e6" font-size="11">22 cm</text><text x="128" y="100" fill="#ff8a1f" font-size="11">0 = shaft centre</text><text x="10" y="128" fill="#8fa0b8" font-size="11">top view (you sit at the bottom)</text><line x1="250" y1="112" x2="432" y2="112" stroke="#cfd8e6" stroke-width="2"/><line x1="332" y1="18" x2="332" y2="112" stroke="#8fa0b8" stroke-dasharray="3 3" stroke-width=".7"/><rect x="318" y="44" width="28" height="48" rx="4" fill="#1d5b45" stroke="#3ddc97" stroke-width=".8"/><rect x="318" y="92" width="8" height="20" fill="#1d5b45" stroke="#3ddc97" stroke-width=".8"/><rect x="338" y="92" width="8" height="20" fill="#1d5b45" stroke="#3ddc97" stroke-width=".8"/><text x="250" y="128" fill="#8fa0b8" font-size="11">side: straight down, tips on table</text></svg>`;
+ let title,body,btn,extra=pic;
+ const done=a.undo&&a.n===0&&a.gap_mm!=null&&a.gap_mm<10&&limp;
+ if(done){title='Done: the model now matches the real arm';body='Nothing else to do. The camera pictures were re-mapped by themselves. If something looks wrong, press Undo.';btn=`<button class="sm ghost" onclick="post('/api/pp/align',{do:'undo'})">Undo</button>`;extra=''}
+ else if(a.n>=3){title='Step 5 of 5: calculate';body='All three spots are recorded. Keep hold of the gripper, then press Fit &amp; apply and wait about 10 seconds.';btn=`<button class="sm" onclick="post('/api/pp/align',{do:'fit'})">Fit &amp; apply</button>`;extra=''}
+ else if(!limp){title=a.n?'The arm got stiff again':'Step 1 of 5: release the arm';body='Press Release arm. The arm lowers itself to the table and goes limp: you do not need to hold anything. When it is limp this card shows your next step.';btn=rel}
+ else{const r=[12,17,22].find(v=>!has(v));title=`Step ${have.length+2} of 5: spot ${have.length+1} (${r} cm)`;body=(have.length?'':'The arm is limp now. First lay a ruler on the table: its 0 end exactly at the centre of the round shaft the arm turns on, pointing straight away from you. ')+`Hold the gripper straight up and down with BOTH finger tips touching the table exactly on the ${r} cm mark. Hold still, then press the button.`;btn=rec(r)}
+ const dots=[12,17,22].map(v=>`<span style="color:${has(v)?'#3ddc97':'#51627c'}">●</span>`).join(' ');
+ return `<div style="padding:12px 2px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:8px 0"><div><b>Align the model to the real arm</b> <small>(once, ~2 minutes) &nbsp;${dots} ${have.length?have.map(v=>v+' cm').join(', ')+' recorded':'no spots yet'}</small></div><div style="font-size:15px;font-weight:700;margin-top:8px">${title}</div><div style="font-size:13px;line-height:1.45;margin-top:4px">${body}</div>${extra}<div id="alignStatus" style="font-size:12px;color:var(--org);min-height:16px"></div><div style="display:flex;gap:8px;align-items:center;margin-top:8px">${btn}<button class="sm ghost" onclick="post('/api/pp/align',{do:'clear'})">Start over</button></div></div>`}
+function ppTuneHtml(p){if(!p)return '';const z=p.zones,row=(label,val,k,step)=>`<div class="tune"><span>${label}<br><small>${val}</small></span><span class="b"><button class="sm ghost" onclick="ppSet('${k}',${+(p.params[k.split('.')[0]]??0)})" style="display:none"></button></span></div>`;
+ const t=(label,val,k,cur,step)=>`<div class="tune"><span>${label}<br><small>${val}</small></span><span class="b"><button class="sm ghost" onclick="ppSet('${k}',${cur-step})">−</button><button class="sm ghost" onclick="ppSet('${k}',${cur+step})">+</button></span></div>`;
+ return (p.ncam>1?`<div class="tune"><span>Cameras to use<br><small>${p.fusion?`keychain seen by camera ${p.fusion.cams.join(' + ')}${p.fusion.cams.length>1?`, they agree within ${p.fusion.spread_mm} mm`:''}`:'no keychain in view'}</small></span><span class="b">${[['auto','Both'],['0','Cam 1'],['1','Cam 2']].map(([k,l])=>`<button class="sm ghost ${p.cam_mode===k?'on':''}" onclick="ppSet('cam_mode','${k}')">${l}</button>`).join('')}</span></div>`:'')+`<div class="tune"><span>Camera calibration status<br><small>${p.cams.map((c,i)=>`camera ${i+1}: ${c.cal?(c.rms!=null?'calibrated ('+c.rms.toFixed(1)+' px)':'calibrated'):'not calibrated'}${chkText((p.cam_chk||[])[i])}`).join(' · ')}</small></span><span class="b"></span></div>`+`<div class="tune"><span>Table height<br><small>${p.z_table_mm==null?'not measured':p.z_table_mm+' mm'}</small></span><span class="b"><button class="sm" ${p.running?'disabled':''} onclick="askYes('The follower will lower itself onto the table at one spot until it touches. Keep the area under the gripper clear. Start?','Yes',()=>ppAct('probe',{x:200,y:-90}))">Find by touching</button></span></div><div class="tune"><span>Table map from the fingertips<br><small>${p.taught>=8?`done: ${p.taught} fingertip positions, error ${p.fit_mm!=null?p.fit_mm.toFixed(1):'?'} mm`:'not done. The arm moves its fingertips over the table by itself (about 2 minutes); nothing is held in the gripper'}</small></span><span class="b"><button class="sm" ${p.running?'disabled title="a job is running: press Stop first"':''} onclick="askYes('The arm will move its fingertips over the table by itself for about 2 minutes. Stay away from it. Start?','Yes, start',()=>ppAct('scan'))">Scan the table</button></span></div><div class="tune"><span>Keychain in the gripper<br><small>${p.kc_held?'yes: held between the fingers':(p.limp?'no. The arm is limp: 1) lay the keychain flat on the table, ring away from the arm, 2) move the arm by hand so the two OPEN fingers straddle the END of the red body that has NO ring (about 1 cm of it between the fingertips), gripper pointing straight down, 3) take your hands away, 4) press the button':'no. Press the button: the arm lowers itself and goes limp first, so nothing stiff is near your hands')}</small></span><span class="b">${p.kc_held?`<button class="sm ghost" ${p.running?'disabled':''} onclick="ppAct('grip',{pct:100})">Let go (open)</button>`:(p.limp?`<button class="sm" ${p.running?'disabled':''} onclick="ppAct('grip',{pct:0})">Hands are off: close the gripper</button>`:`<button class="sm" ${p.running?'disabled title="a job is running: press Stop first"':''} onclick="askYes('The arm lowers itself to the table and then goes limp. You do not need to hold it.','Yes, lower and release',()=>ppAct('rest'))">Make arm limp</button>`)}</span></div><div class="tune"><span>Camera calibration<br><small>${p.cam_cal?'done (error '+(p.cam_rms||0).toFixed(1)+' px)'+(p.why&&p.why.startsWith('Not picking')?' · OUT OF DATE: do it again':''):'not done: clamp the red keychain in the gripper first'}</small></span><span class="b"><button class="sm" ${p.running||!p.kc_held?`disabled title="${p.running?'a job is running: press Stop first':'no keychain in the gripper yet: use the row above'}"`:''} onclick="askYes('The arm will move through about 33 poses by itself (3 to 4 minutes). Stay away from it. Start?','Yes, start',()=>ppAct('autocal'))">Auto-calibrate</button></span></div>`+`<div class="tune"><span>Find the bowl automatically<br><small>${p.params.auto_bowl?'on: it follows the pink bowl':'off: you set it by hand'}</small></span><span class="b"><button class="sm ghost ${p.params.auto_bowl?'on':''}" onclick="ppSet('auto_bowl',${p.params.auto_bowl?0:1})">${p.params.auto_bowl?'On':'Off'}</button></span></div>`+t('Gripper roll offset',p.params.roll_offset+'°','roll_offset',p.params.roll_offset,15)+t('Grab height above table',(p.params.grasp_dz*1000).toFixed(0)+' mm','grasp_dz',p.params.grasp_dz,0.002)
+  +t('Shift targets forward / back (X)',((p.params.off_x||0)*1000).toFixed(0)+' mm','off_x',p.params.off_x||0,0.005)+t('Shift targets left / right (Y)',((p.params.off_y||0)*1000).toFixed(0)+' mm','off_y',p.params.off_y||0,0.005)+t('Tray drop height',(z.tray.drop*1000).toFixed(0)+' mm','tray.drop',z.tray.drop,0.01)+t('Bowl drop height',(z.bowl.drop*1000).toFixed(0)+' mm','bowl.drop',z.bowl.drop,0.01)+alignRow(p)+t('Bowl safety margin',((p.params.bowl_clear||0)*1000).toFixed(0)+' mm extra · the red line on the camera picture is where the open gripper may not go'+(p.bowl_rim_mm?` · bowl rim ${p.bowl_rim_mm[2]*2} mm wide`:''),'bowl_clear',p.params.bowl_clear||0,0.003)}
+
+let rolesKey='',lastRoles=[];
+
+/* ---- notifications, health, camera watchdog ---- */
+function notify(msg,level,ms){const b=$('toasts'),t=document.createElement('div');t.className='toast '+(level||'');t.innerHTML=msg;b.appendChild(t);
+ setTimeout(()=>t.remove(),ms||(level==='err'?9000:4500));while(b.children.length>4)b.firstChild.remove()}
+const prevH={};function transition(key,now,okMsg,badMsg){if(prevH[key]!==undefined&&prevH[key]!==now)notify(now?okMsg:badMsg,now?'ok':'err');prevH[key]=now}
+let camBad=0,camLast=0,serverDown=false;
+function camSrcReload(){camLast=Date.now();const u='/stream.mjpg?t='+camLast;$('cam').src=u;const w=$('wizimg');if(w)w.src=u;if($('cam2wrap').style.display!=='none')$('cam2').src='/stream2.mjpg?t='+camLast}
+let cam2On=false;
+function cam2Health(s){const c=s.cameras&&s.cameras[1];const wrap=$('cam2wrap'),row=$('camrow');
+ if(!c){wrap.style.display='none';row.classList.remove('two');$('camlab1').style.display='none';cam2On=false;return}
+ wrap.style.display='block';row.classList.add('two');$('camlab1').style.display='block';
+ if(!cam2On){cam2On=true;$('cam2').src='/stream2.mjpg?t='+Date.now()}
+ const o=$('camov2');o.className='camov'+(c.ok?'':' on');if(!c.ok)o.innerHTML=`<div class="spin"></div><b>Camera 2 lost</b><small>${(c.err||'no frames').replace(/</g,'&lt;')}<br>Reconnecting…</small>`;
+ transition('cam2',c.ok,'<b>Camera 2 is back</b>','<b>Camera 2 lost</b> — reconnecting…');
+ const im=$('cam2');if(c.ok&&(!im.complete||im.naturalWidth===0)&&Date.now()-camLast>3000)im.src='/stream2.mjpg?t='+Date.now()}
+function camBrightness(img){try{const c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d');x.drawImage(img,0,0,8,8);const d=x.getImageData(0,0,8,8).data;let m=0;for(let i=0;i<d.length;i+=4)m+=d[i]+d[i+1]+d[i+2];return m/(d.length/4*3)}catch(e){return 99}}
+function camHealth(s){
+ const bad=!s.camera, ov=`<div class="spin"></div><b>Camera feed lost</b><small>${(s.camera_err||'no frames').replace(/</g,'&lt;')}<br>Reconnecting automatically…${s.camera_src&&s.camera_src.startsWith('http')?'<br>If the Pi is off or offline, check its power and Wi-Fi.':''}</small>`;
+ const o=$('camov');o.className='camov'+(bad?' on':'');if(bad)o.innerHTML=ov;
+ const w=$('wizov');if(w){w.className=bad?'on':'';if(bad)w.innerHTML=`<div class="spin"></div><b>Camera feed lost</b><div style="font-size:13px;color:var(--mut)">${(s.camera_err||'').replace(/</g,'&lt;')}</div><div style="font-size:13px;color:var(--mut)">Reconnecting automatically…</div>`}
+ transition('cam',!bad,'<b>Camera is back</b>','<b>Camera feed lost</b> — reconnecting…');
+ if(!bad){const im=$('cam');const stale=!im.complete||im.naturalWidth===0||(Date.now()-camLast>6000&&camBrightness(im)<2);
+  if(stale&&Date.now()-camLast>2500){camBad++;camSrcReload()}   // the server is fine but our picture stalled/black: re-open the stream
+  else if(Date.now()-camLast>20000)camLast=Date.now()}
+ else if(Date.now()-camLast>4000)camSrcReload();
+ cam2Health(s);const cm=$('cmsg');cm.textContent=bad?'':(s.camera_fps?`${s.camera_fps} fps`:'')}
+function chips(s){const f=s.arms.find(a=>a.role==='follower'),l=s.arms.find(a=>a.role==='leader');
+ const c=(ok,label,warn)=>`<span class="sc ${ok?'on':warn?'warn':''}"><i></i>${label}</span>`;
+ $('chips2').innerHTML=c(s.camera,'Camera 1'+(s.camera&&s.camera_fps?' '+Math.round(s.camera_fps)+' fps':''))+(s.cameras&&s.cameras[1]?c(s.cameras[1].ok,'Camera 2'+(s.cameras[1].ok?' '+Math.round(s.cameras[1].fps)+' fps':'')):'')+c(f&&f.online&&!(f.missing||[]).length,'Follower'+(f&&(f.missing||[]).length?': '+(f.missing.length>=3?'no motor answers':f.missing.join(', ')+' missing'):''))+c(l&&l.online&&!(l.missing||[]).length,'Leader'+(l&&(l.missing||[]).length?': '+(l.missing.length>=3?'no motor answers':l.missing.join(', ')+' missing'):''));
+ transition('fol',!!(f&&f.online),'<b>Follower arm connected</b>','<b>Follower arm lost</b> — check its USB cable and power');
+ transition('lea',!!(l&&l.online),'<b>Leader arm connected</b>','<b>Leader arm lost</b> — check its USB cable and power')}
+
+let camTry=0;
+$('cam').onerror=()=>setTimeout(camSrcReload,1500);
+/* ---------------- arm problems (which joint, why, how to fix) + joint check ---------------- */
+const JI={shoulder_pan:{n:1,nice:'shoulder pan',what:'turns the whole arm left and right',find:'the lowest motor, inside the base',hint:'a cable wound around the base'},
+ shoulder_lift:{n:2,nice:'shoulder lift',what:'raises and lowers the upper arm',find:'the motor where the upper arm meets the base',hint:'the arm resting on the table or on a cable'},
+ elbow_flex:{n:3,nice:'elbow',what:'bends the forearm',find:'the motor at the elbow, in the middle of the arm',hint:'the forearm resting on something, or a cable pulled across it'},
+ wrist_flex:{n:4,nice:'wrist bend',what:'bends the hand up and down',find:'the motor just after the forearm',hint:'the hand touching the table, or a cable pulled tight'},
+ wrist_roll:{n:5,nice:'wrist roll',what:'twists the hand around its own length',find:'the motor between the wrist bend and the gripper',hint:'a cable twisted or pulled tight around the wrist: turn the hand back to the middle (flat side down) and give the cable some slack'},
+ gripper:{n:6,nice:'gripper',what:'opens and closes the moving jaw',find:'the motor on the hand itself',hint:'something stuck between the jaws, or its cable pulled tight'}};
+const jinfo=j=>JI[j]||{n:'?',nice:j,what:'',find:'',hint:''};
+const FAULTW={voltage:'its supply voltage is out of range: check the arm\'s power plug',sensor:'its position sensor reports an error',current:'it drew too much current (blocked or overloaded)',angle:'it was driven beyond its allowed angle',overload:'it was overloaded and switched its own torque off'};
+function probCopy(p){const I=jinfo(p.joint),pre=`${I.nice} (motor ${I.n} of 6)`,look=`Look at ${I.find}: is a cable pulled tight, twisted or caught?`;
+ if(p.kind==='missing')return{t:`${pre} does not answer`,why:'The motors are chained with 3-wire cables. This one is not replying: usually a loose plug on it or on the motor before it, sometimes no power. Teleop, calibration and pick &amp; place stay blocked until it answers.',steps:[`Find it: ${I.find}.`,'Push the plug at each end of this motor in until it clicks (the plug before it and the plug after it).','It reconnects by itself within 2 seconds and this box disappears.']};
+ if(p.kind==='no_bus')return{t:`${p.count===p.total?'No motor answers':p.count+' of '+p.total+' motors do not answer'}: the arm cannot be read or released`,why:'A motor that stops answering keeps its LAST torque, so the arm can stay stiff while this dashboard cannot see it. Most likely: the power supply is off or its plug is loose, or the 3-wire cable between the USB board and the first motor (in the base) is loose. A damaged motor can also hold the whole chain down: the wrist roll overheated twice just before this.',steps:['Keep your hands clear of the arm: it may still be STIFF.','Switch the follower\'s power supply OFF (or unplug it). That makes the arm limp for sure; it may sag, it was resting low.','Wait 10 seconds, then switch it back ON. The dashboard reconnects by itself within 2 seconds.','If nothing answers: press the 3-wire cable at the base (between the USB board and the first motor) in until it clicks, then power cycle again.','Still nothing: with the power OFF unplug the wrist roll motor\'s cable (motor 5, the one that overheated), power ON again. If the other motors now answer, that motor is damaged.'],free:true,nobus:true};
+ if(p.kind==='role_swap'){const other=p.role==='follower'?'leader':'follower';return{t:`This arm reads ${p.value} V: it looks like the ${other}, but it is labelled ${p.role}`,why:`The follower runs on 12 V and the leader on about 7 V. A swapped label makes a calibration get saved for the wrong arm and teleop refuse to start.`,steps:[`On this arm's card, change the dropdown at the top right (it says ${p.role}) to ${other}.`,'Check the other arm: its dropdown must then say '+p.role+'.','Do not press Calibrate until both labels are right.'],free:true}}
+ if(p.kind==='apart')return{t:`${I.nice}: leader and follower are ${p.value}° apart`,why:'Teleop would make the follower twist that far at once and pull its own cable tight. That is what overheated this motor (83 °C). Leader → follower will not start until they are within a quarter turn.',steps:['Take the LEADER arm (it is limp, safe to touch) and look at the 3D arm: the leader\'s ROLL value and the follower\'s ROLL value are written next to each hand.',`Turn the leader's ${I.nice} (${I.find}) by hand until the two ROLL values are within about 90° of each other.`,'This box disappears by itself and Start leader → follower works again.'],free:true};
+ if(p.kind==='hot')return{t:`${pre} is hot: ${p.value??'?'} °C${p.tripped?' (it switched itself off)':''}`,why:'A motor heats up when it pushes hard against something. At 71 °C it switches itself off to protect itself.',steps:['Leave it limp and untouched for about 5 minutes. It should fall below 45 °C.',`While it cools, look for what it was pushing against: ${I.hint}.`,'When it is below 45 °C, press its Test button in the Joint check below.']};
+ if(p.kind==='push')return{t:`${pre} is pushing at ${p.value}% torque`,why:'It is trying to move but something is holding it back: the table, a cable, or the end of its range.',steps:[look,`Most likely: ${I.hint}.`,'Turn it by hand through its range. It should move freely, with no clicking or grinding.','Press its Test button in the Joint check below.']};
+ if(p.kind==='teleop_stop')return{t:`Leader → follower stopped: ${I.nice} ${p.what==='hot'?`got hot (${p.value} °C)`:`was pushing at ${p.value}%`}`,why:(p.joint==='wrist_roll'&&p.what!=='hot'?'Possible cause: the leader\'s hand twist was far from the follower\'s when you pressed Start, so the follower turned hard to catch up and pulled its own cable. ':'')+'The follower stopped and is holding still.',steps:[look,`Most likely: ${I.hint}.`,'Before pressing Start again, hold the leader and the follower in a similar pose (hand twist too).','Press Dismiss when you have dealt with it.'],dismiss:true};
+ const W=p.whats||[p.what];return{t:`${pre}: the motor reports ${W.join(', ')} ${W.length>1?'faults':'fault'}`,why:W.map(w=>FAULTW[w]).filter(Boolean).join('; ').replace(/^./,c=>c.toUpperCase())+'.'+(W.length>2?' Several at once usually means this motor\'s power sags: a loose or worn connector on it or on the motor before it.':''),steps:[look,'Push the plugs at both ends of this motor in until they click (try the other socket on the motor).','If it keeps coming back, unplug the arm\'s power for 5 seconds and plug it in again.']}}
+const BADJ=[],TESTJ=[],pSig={};
+const ignRefresh=()=>{sig='';Object.keys(pSig).forEach(k=>delete pSig[k])};
+const ignAsk=j=>{const I=jinfo(j);askYes(`Leader → follower will copy everything except <b>${I.nice}</b>, which is switched off and left limp. ${j==='wrist_roll'?'Pick &amp; place also works: the gripper keeps its current twist, so lay the keychain across the jaws.':'Pick &amp; place will NOT work without it.'} You can use it again at any time. Ignore it?`,'Yes, ignore it',()=>post('/api/ignore',{joint:j,on:true}).then(ignRefresh))};
+const ignOff=j=>post('/api/ignore',{joint:j,on:false}).then(ignRefresh);
+const LIMPNOW=`<button class="sm" style="background:var(--warn)" onclick="askYes('Torque goes OFF on every motor right now. The arm is NOT lowered first, so it can drop: hold the hand, or check that it rests low. If no motor answers, switching the follower\'s power supply off is the only sure way. Go on?','Yes, limp now',()=>ppAct('limp_now'))">Limp now</button>`;
+const LIMPBTN=`<button class="sm" onclick="askYes('The arm lowers itself to the table and then goes limp. You do not need to hold it.','Yes, lower and release',()=>ppAct('rest'))">Make arm limp</button>`;
+const ckIssue=i=>({no_reach:`did not reach its target (off by ${Math.round(i.value)} ticks): blocked or too weak`,no_follow:`moved only ${Math.abs(i.moved)} of ${Math.abs(i.cmd)} ticks in the ${i.sign>0?'+':'−'} direction when asked`,high_load:`worked hard: peak ${i.value}% torque (normal is under 55%)`,heat:`warmed by ${i.value} °C during the test`,mid_off:`its real middle is ${i.value}° away from where the saved calibration says. Calibrate this arm again (Calibrate button below)`,limited:'one swing was shortened so the hand stays above the table',blocked:i.text})[i.kind]||i.kind;
+const CKN=['shoulder_pan','shoulder_lift','elbow_flex','wrist_flex','wrist_roll','gripper'];
+function ckAsk(names){const all=names.length>1;askYes(`The follower will move by itself: slowly to the middle pose (every joint at the middle of its range), then ${all?'each joint':'<b>'+jinfo(names[0]).nice+'</b>'} a little each way, never near the ends. About ${all?'3 minutes':'30 seconds'}. At the end it lowers itself and goes limp. Keep your hands and objects away from the arm. Start?`,'Yes, start',()=>ppAct('check',{joints:names}))}
+const psig=a=>JSON.stringify([!a.torque_on,(a.ignored||[]).join(),(a.problems||[]).map(p=>[p.kind,p.joint,p.what,(p.whats||[]).join(),p.kind==='push'?Math.round(p.value/10):p.value])]);
+const fixSteps=(a,c)=>(!a.torque_on||c.free)?`<ol>${c.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:`<div class="pstep">The arm is stiff, so touching it is not safe yet. Let it lower itself and go limp first (hands off): ${LIMPBTN}<br><small>The steps appear once it is limp.</small></div>`;
+function fixHtml(n){const a=lastS&&lastS.arms[n];if(!a)return '';const ps=a.problems||[];
+ if(!ps.length)return '<div class="hint okmsg">No problems right now. This box closes when you press Close.</div>';
+ return ps.slice(0,2).map(p=>{const c=probCopy(p);return `<div class="prob"><div class="pt">⚠ ${c.t}</div><div class="pw">${c.why}</div>${fixSteps(a,c)}${c.dismiss?`<button class="sm ghost" onclick="post('/api/teleop/dismiss')">Dismiss</button> `:''}${p.joint&&p.kind!=='no_bus'?`<button class="sm ghost" onclick="ignAsk('${p.joint}')">Ignore this motor</button>`:''}</div>`}).join('')+(ps.length>2?`<div class="mono">and ${ps.length-2} more: fix these first, the rest then show up here.</div>`:'')}
+function checkHtml(n){const a=lastS&&lastS.arms[n];if(!a)return '';const ck=lastPP&&lastPP.check,running=!!(lastPP&&lastPP.running);
+ const why=!a.online?'the arm is offline':(a.missing||[]).length?'a motor does not answer':!a.calibrated?'calibrate the arm first':(a.problems||[]).some(p=>p.kind==='hot')?'a motor is hot: let it cool first':running?'something else is running: press Stop first':'';
+ const R=(ck&&ck.joints)||{},dis=why?`disabled title="${why}"`:'';
+ return `<div class="row" style="margin-bottom:6px"><span class="mono" style="flex:1">${ck&&ck.msg?ck.msg:'Slowly to the middle pose, then each joint a little each way from there, never near its ends.'}</span>${ck&&ck.running?`<button class="sm" onclick="ppAct('stop')">■ Stop</button>`:`<button class="sm" ${dis} onclick="ckAsk(CKN)">Test all joints</button>`}</div>${why?`<div class="mono" style="color:var(--warn);margin-bottom:4px">Not available: ${why}.</div>`:''}
+  ${CKN.map(j=>{const I=jinfo(j),r=R[j],ig=(a.ignored||[]).includes(j),st=ig?'ignored':r?r.status:'',lab={ok:'✓ ok',warn:'⚠ check',fail:'✕ failed',running:'testing…',untested:'not tested',ignored:'ignored'}[st]||'—';
+   return `<div class="ckr"><span><b>${I.n}. ${I.nice}</b><small>${I.what}</small></span><span class="ckst ${st==='running'?'run':st}">${lab}</span><button class="sm ghost" ${dis||ig?'disabled':''} onclick="ckAsk(['${j}'])">Test</button><button class="sm ghost" onclick="${ig?`ignOff('${j}')`:`ignAsk('${j}')`}">${ig?'Use again':'Ignore'}</button>${r&&r.issues&&r.issues.length?r.issues.map(i=>`<div class="cki ${r.status==='fail'?'fail':''}">${ckIssue(i)}</div>`).join(''):''}</div>`}).join('')}`}
+const alignHtml=()=>`<div class="mono" style="margin-bottom:8px">Makes the follower copy the leader exactly. Both arms are the same hardware, so only a starting offset and the trigger's two ends need measuring.</div>
+ <div class="hint"><b>1.</b> Hold BOTH arms in the same pose (both folded flat on their rests works well). Keep still, then press <button class="sm" onclick="post('/api/teleop/match')">Match poses</button></div>
+ <div class="hint"><b>2.</b> Squeeze the LEADER's trigger fully closed and hold it: <button class="sm" onclick="post('/api/teleop/grip_closed')">Closed here</button> &nbsp; then let it go fully open: <button class="sm" onclick="post('/api/teleop/grip_open')">Open here</button></div>
+ <div class="hint"><b>Smoothness</b> <input id="alSmooth" type="range" min="0" max="100" step="5" style="width:60%;vertical-align:middle" oninput="$('alSmv').textContent=this.value" onchange="post('/api/teleop/smooth',{value:+this.value})"> <b id="alSmv">40</b><br><small>0 = raw and fastest (can look jerky), 100 = smoothest (adds up to 0.12 s of lag). Applies live, also while following.</small></div>
+ <div class="mono" id="alLive" style="margin:6px 0"></div>
+ <button class="sm ghost" onclick="askYes('Forget the measured alignment and use the saved calibration only?','Yes, reset',()=>post('/api/teleop/match_reset'))">Reset alignment</button>`;
+const openAlign=()=>openModal('Align leader and follower',alignHtml);
+function updateAlign(s){const el=$('alLive');if(!el||!s.align)return;const sl=$('alSmooth');if(sl&&document.activeElement!==sl){sl.value=s.align.smooth;$('alSmv').textContent=s.align.smooth}const A=s.align,g=A.joints.gripper;
+ el.innerHTML=Object.entries(A.joints).filter(([n])=>n!=='gripper').map(([n,v])=>`${jinfo(n).nice}: <b style="color:${Math.abs(v.diff)>8?'var(--warn)':'var(--acc)'}">${v.diff>0?'+':''}${v.diff}°</b>`).join(' · ')+`<br>Follower is that far from where the leader tells it to be${A.matched.length?' (matched joints use your measured offset)':''}.`+(A.notes&&A.notes.length?`<br><small style="color:var(--mut)">Note: ${A.notes.map(x=>x.replace(/^(\w+)_/,'$1 ').replace(/_/g,' ')).join('; ')}.</small>`:'')+(g?`<br>Trigger: leader reads ${g.leader}${A.grip?` (closed ${A.grip.closed ?? '?'} · open ${A.grip.open ?? '?'})`:''} · jaw reads ${g.follower} · wanted ${g.want}`:'')}
+const openFix=n=>openModal('Arm problem: what to do',()=>fixHtml(n));
+const openCheck=n=>openModal('Joint check: one joint at a time, from the middle',()=>checkHtml(n));
+function paintProblems(s){
+ s.arms.forEach((a,n)=>{
+  BADJ[n]=new Map();(a.problems||[]).forEach(p=>{const t=probCopy(p).t;BADJ[n].set(p.joint,[...(BADJ[n].get(p.joint)||[]),t])});const ck=lastPP&&lastPP.check;TESTJ[n]=a.role==='follower'&&ck&&ck.running?ck.current:null;
+  const host=$('pr'+n);if(!host)return;const sg=psig(a);if(pSig['p'+n]===sg)return;pSig['p'+n]=sg;const ps=a.problems||[];const ig=$('ig'+n);if(ig)ig.innerHTML=(a.ignored||[]).length?`<div class="hint" style="margin:8px 0">Working without: ${a.ignored.map(j=>`<b>${jinfo(j).nice}</b> <button class="sm ghost" onclick="ignOff('${j}')">Use again</button>`).join(' ')}<br><small>It is switched off and left out of leader → follower${a.ignored.some(j=>j!=='wrist_roll')?'. Pick &amp; place needs it back':' and pick &amp; place (the gripper keeps its twist)'}.</small></div>`:'';
+  host.innerHTML=ps.slice(0,2).map(p=>{const c=probCopy(p);return `<div class="prob"><div class="pt">⚠ ${c.t}</div><div class="row" style="gap:8px;justify-content:flex-start"><button class="sm" onclick="openFix(${n})">How to fix</button>${c.nobus?LIMPNOW:(a.torque_on&&a.role==='follower'&&!c.free?LIMPBTN:'')}</div></div>`}).join('')+(ps.length>2?`<div class="mono">and ${ps.length-2} more (open How to fix)</div>`:'')});
+}
+let teleOn=false;
+function teleUI(t){const b=$('bTele'),m=$('teleMsg');if(!t||!b)return;teleOn=!!t.on;$('tele').style.display=(t.both||t.on)?'flex':'none';
+ b.disabled=!t.on&&!!t.why;b.className=t.on?'run':'';b.textContent=t.on?'■ Stop leader → follower':'▶ Start leader → follower';
+ const txt=t.on?(t.blocked?t.blocked:`${t.msg}${t.synced&&t.hz?' · '+t.hz+' Hz · '+t.ms+' ms work · worst gap '+t.max_ms+' ms':''}`):(t.why||t.msg||'Move the leader by hand: the follower copies it');
+ m.textContent=txt;m.className=t.on&&t.blocked?'warn':'';
+ if(teleLastMsg!==t.msg&&!t.on&&t.msg&&/^stopped:/.test(t.msg))notify('<b>Leader → follower stopped</b><br>'+t.msg.replace(/^stopped: /,''),'err');teleLastMsg=t.msg}
+let teleLastMsg='';
+$('bTele').onclick=()=>post('/api/teleop/'+(teleOn?'stop':'start'));
+/* ---------------- fast pose feed: joint positions at display rate (the full state is only needed ~10 times a second) ---------------- */
+/* The LEADER is drawn in the FOLLOWER's frame (its reading goes through the same leader -> follower map teleop uses), so the same physical pose shows the same angle on both 3D arms.
+   Before: each arm used the middle of its OWN swept range as zero, and those middles differ (leader pan 1770 vs follower 2084), so one pose read 39 vs 3 degrees. */
+let LMAP=null;
+const mapRaw=(n,raw)=>{const p=LMAP&&LMAP[n];if(!p)return raw;if(p.kind==='prop'){let t=Math.min(1,Math.max(0,(raw-p.l[0])/Math.max(1,p.l[1]-p.l[0])));if(p.flip)t=1-t;return p.f[0]+t*(p.f[1]-p.f[0])}return Math.min(p.fhi,Math.max(p.flo,p.sign*raw+p.k))};
+function viewRaw(a,j,p){if(a.role!=='leader'||!LMAP||a.calib.step==='sweep')return [p,pickRange(a,j)];const fa=lastS&&lastS.arms.find(x=>x.role==='follower');if(!fa||!fa.cal||!fa.cal[j.name])return [p,pickRange(a,j)];return [mapRaw(j.name,p),fa.cal[j.name]]}
+const _ru={};function rollUnwrap(key,v){const u=_ru[key];if(u===undefined){_ru[key]=v;return v}_ru[key]=u+((((v-u+540)%360)+360)%360-180);return _ru[key]}   /* the wrist roll turns a full circle: carry on past +-180 instead of snapping the 3D hand through a full spin at the encoder seam */
+let poseT=0,POSEHZ=0,_pn={},_pa={},_pt=performance.now();
+function poseDeg(a,pos,n){const deg={...ZERO};
+ a.joints.forEach(j=>{const p0=pos[j.name];if(p0==null)return;const [p,r]=viewRaw(a,j,p0),mid=r?(r[0]+r[1])/2:2047.5,d=(p-mid)*360/4095,f=VIZ.flip[j.name]?-1:1,off=VIZ.offset[j.name]||0;
+  if(j.name==='gripper'){const pct=(r?clamp((p-r[0])/Math.max(1,r[1]-r[0]),0,1):p/4095)*100;deg.gripper=f<0?100-pct:pct}else deg[j.name]=j.name==='wrist_roll'?rollUnwrap(n,f*d+off):f*d+off});return deg}
+async function poseLoop(){
+ for(;;){
+  try{const r=await (await fetch('/api/pose')).json();
+   if(lastS&&lastS.arms)lastS.arms.forEach((a,n)=>{const q=r.arms[a.port];if(q&&q.online&&!a.remote)targets[n]=poseDeg(a,q.pos,n)});
+   poseT=performance.now();for(const k in r.arms){_pa[k]=(_pa[k]||0)+(r.arms[k].n-(_pn[k]??r.arms[k].n));_pn[k]=r.arms[k].n}
+   const now=performance.now();if(now-_pt>=1000){POSEHZ=Math.round(Math.max(0,...Object.values(_pa))*1000/(now-_pt));for(const k in _pa)_pa[k]=0;_pt=now}
+  }catch(e){await new Promise(r=>setTimeout(r,300))}
+  await new Promise(r=>setTimeout(r,28));      /* about 30 fetches a second is plenty and keeps the server's Python threads free for the motors */
+ }}
+poseLoop();
+async function tick(){
+ try{
+  const s=await (await fetch('/api/state')).json();lastS=s;if(s.arms.length&&!s.arms.find(a=>a.role===armSel))armSel=s.arms[0].role;if(serverDown){serverDown=false;$('banner').style.display='none';notify('<b>Reconnected</b> to the dashboard server','ok');camSrcReload()}
+  camHealth(s);chips(s);teleUI(s.teleop);ppRender(s.pp);setTableY(-0.24);{const al=$('alignStatus');if(al&&s.pp)al.textContent=s.pp.status||''}const tn=$('tiltNow');if(tn&&s.pp&&s.pp.tilt)tn.textContent=`now: ${s.pp.tilt.now>0?'+':''}${s.pp.tilt.now}° in the arm's plane, ${s.pp.tilt.lat>0?'+':''}${s.pp.tilt.lat}° sideways (0 = straight down)`;VIZ={flip:{},offset:{},...s.viz};
+  $('cd').className='dot'+(s.camera?' on':'');
+  const on=s.arms.some(a=>a.online);$('pulse').className='pulse'+(on?' on':'');
+  $('livetxt').textContent=on?`LIVE · ${s.arms.filter(a=>a.online).length} arm${s.arms.length>1?'s':''} connected${POSEHZ?` · ${POSEHZ} Hz`:''}`:'no arms connected';
+  const rk=s.arms.map(a=>a.role).join();if(rk!==rolesKey||s.arms.length!==sim.length){rolesKey=rk;lastRoles=s.arms.map(a=>a.role);rebuild(lastRoles)}
+  const el=$('arms');
+  if(!s.arms.length){if(sig!=='none'){sig='none';el.innerHTML='<div class="card"><div class="empty">No arms detected. Plug in a USB servo board.</div></div>'}return}
+  const nsig=JSON.stringify([armSel,s.viz,s.arms.map(a=>[a.port,a.role,a.online,a.wiggling,a.calibrated,a.has_default,a.notice,(a.missing||[]).join(),a.calib.step,a.calib.error,a.calib.saved,a.joints.map(j=>j.id)])]);
+  if(nsig!==sig){sig=nsig;for(const k in pSig)delete pSig[k];
+   const open=el.querySelector('details')?.open;
+   $('armsel').innerHTML=s.arms.map(a=>`<button class="chip ${a.role===armSel?'on':''}" onclick="armSel='${a.role}';sig=''"><span class="dot ${a.online?'on':''}" style="margin-right:6px"></span>${a.role==='leader'?'Leader':'Follower'}</button>`).join('');
+   el.innerHTML=s.arms.map((a,n)=>a.role!==armSel?'':`<div class="card"><div class="row"><h2><span class="dot ${a.online?'on':''}"></span>${a.role==='leader'?'Leader':'Follower'} arm</h2>
+    <span class="row" style="gap:8px">${a.remote?'<span class="badge">via Mac</span>':''}<span class="badge ${a.calibrated?'ok':'no'}">${a.calibrated?'calibrated':'not calibrated'}</span>
+    <select ${a.calib.step==='idle'&&!a.remote?'':'disabled'} onchange="post('/api/role/${n}',{role:this.value})">${['follower','leader'].map(r=>`<option ${a.role===r?'selected':''}>${r}</option>`).join('')}</select></span></div>
+    <div class="mono">${a.port} · ${a.volt?a.volt.toFixed(1)+' V':'—'}</div><div id="ig${n}"></div><div id="pr${n}"></div>${a.notice?`<div class="hint okmsg">${a.notice}</div>`:''}${joints(a,n)}${body(a,n)}</div>`).join('');
+   if(open){const d=el.querySelector('details');if(d)d.open=true}}
+  s.arms.forEach((a,n)=>paint(a,n));LMAP=s.align&&s.align.map||null;paintProblems(s);updateAlign(s);
+  if($('modal').classList.contains('open')){const ms=JSON.stringify([VIZ,lastPP&&lastPP.params,lastPP&&stableP(lastPP).zones,lastPP&&lastPP.align,lastPP&&lastPP.limp,lastPP&&lastPP.running,lastPP&&lastPP.kc_held,s.arms.map(a=>a.online),lastPP&&lastPP.check&&[lastPP.check.msg,lastPP.check.current,lastPP.check.running,Object.entries(lastPP.check.joints||{}).map(([k,r])=>[k,r.status,(r.issues||[]).length])],s.arms.map(psig)]);if(ms!==modalSig){modalSig=ms;renderModal()}}
+ }catch(e){if(!serverDown){serverDown=true;$('banner').style.display='block';$('banner').textContent='Lost connection to the dashboard server — retrying…';notify('<b>Lost connection</b> to the dashboard server','err')}}
+}
+(async()=>{for(;;){await tick();await new Promise(r=>setTimeout(r,performance.now()-poseT<500?250:100))}})();   /* the heavy full state only 4 times a second while the light pose feed is running */
+</script></body></html>

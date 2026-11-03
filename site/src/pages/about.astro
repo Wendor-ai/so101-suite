@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import SectionHead from '../components/SectionHead.astro';
+import { REPO, REPO_BLOB, ISSUES, SO_ARM100, LEROBOT, LEROBOT_SO101, THREEJS, DISCLAIMER } from '../data/site';
+
+const credits = [
+  { name: 'SO-ARM100 and SO-101', by: 'The Robot Studio', use: 'The arm’s open hardware design. We use its URDF and 3D mesh files for the 3D model.', lic: 'Apache-2.0', href: SO_ARM100 },
+  { name: 'LeRobot', by: 'Hugging Face', use: 'The calibration file convention, and an optional install extra for training and recording.', lic: 'Apache-2.0', href: LEROBOT },
+  { name: 'three.js', by: 'three.js authors', use: 'The 3D arm. A copy is vendored in the app, so it works offline.', lic: 'MIT', href: THREEJS },
+  { name: 'Astro', by: 'Astro contributors', use: 'This website.', lic: 'MIT', href: 'https://astro.build' },
+];
+const roadmap = [
+  'More real-world testing on Windows and Linux, and more camera types.',
+  'More modules from the community, and a better way to share them.',
+  'More Learn articles and diagrams, based on the questions people ask.',
+  'Wider hardware coverage as the SO-101 family and its accessories grow.',
+];
+---
+<Base title="About" description="SO-101 Suite is free, open-source software under the AGPL-3.0, and an independent community project, not affiliated with Hugging Face, LeRobot, The Robot Studio or Feetech.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>About</span></nav>
+    <h1>About SO-101 Suite</h1>
+    <p class="lead">A free, open-source web app that takes someone from an unopened SO-101 box to a calibrated, working arm, and explains every part on the way.</p>
+  </div>
+
+  <div class="wrap narrow" style="padding-bottom:var(--s7)">
+    <div class="callout warn big" id="independent" role="note">
+      <Icon name="alert" />
+      <div class="ct">
+        <span class="tt">An independent community project</span>
+        <p><b>SO-101 Suite is not affiliated with, endorsed by, or sponsored by Hugging Face / LeRobot, The Robot Studio / SO-ARM100, or Feetech.</b> It is made by people who build with these projects and are grateful for them. Names and logos belong to their owners and are used only to say what this project works with.</p>
+      </div>
+    </div>
+
+    <div class="prose">
+      <h2 id="licence">Open source, under the AGPL-3.0</h2>
+      <p>SO-101 Suite is licensed <b>AGPL-3.0-or-later</b>. In plain words: you can use it, read it, change it and share it for free. If you share a modified version, including running it as an online service, you share your changes under the same licence, so forks stay open. This is a summary, not legal advice. Read the <a href={`${REPO_BLOB}/LICENSE`} target="_blank" rel="noopener noreferrer">full licence</a>.</p>
+      <p>Copyright &copy; Wendor AI and SO-101 Suite contributors.</p>
+
+      <h2 id="why">Why this exists</h2>
+      <p>Getting a robot arm from a box of parts to a first move takes a lot of small steps, and every one of them can go quietly wrong: a motor with the wrong ID, a joint that reads zero in the wrong place, a camera that shows a black box. The project began as one person’s pick-and-place code, and the notes from that work turned into safety rules in the code and plain-language explanations in the app.</p>
+      <p>The goal is simple: one command, one next step at a time, and a clear sentence whenever something does not work. It should also be a good place for AI coding agents to work, so it has the rules, skills and an API they need.</p>
+
+      <h2 id="not">What it is not</h2>
+      <ul>
+        <li>Not a replacement for the official <a href={SO_ARM100} target="_blank" rel="noopener noreferrer">SO-ARM100 guides</a> or <a href={LEROBOT_SO101} target="_blank" rel="noopener noreferrer">LeRobot docs</a>. They are the source of truth for building and for training.</li>
+        <li>Not a hosted service. It runs on your computer. There are no accounts and no telemetry, and nothing leaves your machine.</li>
+        <li>Not a store. This site does not sell hardware.</li>
+      </ul>
+
+      <h2 id="roadmap">Roadmap</h2>
+      <p>What we would like to do next. These are ideas, not promises, and the order can change.</p>
+      <ul>{roadmap.map((r) => <li>{r}</li>)}</ul>
+
+      <h2 id="contribute">Contribute</h2>
+      <p>Bug reports, fixes, new Learn articles and modules are all welcome.</p>
+      <ul>
+        <li>Found a problem? Open the app’s Help page, press <b>Copy diagnostics</b>, and paste the result into a <a href={ISSUES} target="_blank" rel="noopener noreferrer">GitHub issue</a>.</li>
+        <li>Want to add a feature? Read <a href={`${REPO_BLOB}/CONTRIBUTING.md`} target="_blank" rel="noopener noreferrer">CONTRIBUTING.md</a> and <a href={`${REPO_BLOB}/AGENTS.md`} target="_blank" rel="noopener noreferrer">AGENTS.md</a>, or start with a <a href="/modules/">module</a>.</li>
+        <li>Want to improve a sentence? The Learn articles and the glossary are plain data files in <code>app/suite/js/content/</code>.</li>
+      </ul>
+      <p><a class="btn primary" href={REPO} target="_blank" rel="noopener noreferrer"><Icon name="github" /> SO-101 Suite on GitHub</a></p>
+    </div>
+
+    <SectionHead eyebrow="Credits" title="Built on other people’s open work" id="credits-h" />
+    <div class="tbl-wrap">
+      <table class="tbl" style="font-size:.95rem">
+        <thead><tr><th scope="col">Project</th><th scope="col">Used for</th><th scope="col">Licence</th></tr></thead>
+        <tbody>
+          {credits.map((c) => (
+            <tr>
+              <td style="white-space:normal;font-family:var(--font)"><a href={c.href} target="_blank" rel="noopener noreferrer"><b>{c.name}</b></a><br /><span class="muted">{c.by}</span></td>
+              <td style="white-space:normal;font-family:var(--font)">{c.use}</td>
+              <td style="white-space:normal;font-family:var(--font)">{c.lic}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:var(--s4)">The Feetech STS3215 servo is the motor in every joint. The app’s Settings, under About, lists the third-party notices that ship with it. {DISCLAIMER}</p>
+  </div>
+</Base>

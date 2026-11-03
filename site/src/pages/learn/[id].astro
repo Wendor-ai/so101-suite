@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import LearnBody from '../../components/LearnBody.astro';
+import { getLearn, inline, plain, siteHref } from '../../data/content';
+
+export async function getStaticPaths() {
+  const articles = await getLearn();
+  return articles.map((article, i) => ({
+    params: { id: article.id },
+    props: { article, prev: articles[i - 1] ?? null, next: articles[i + 1] ?? null, ids: articles.map((a) => a.id) },
+  }));
+}
+const { article, prev, next, ids } = Astro.props;
+const learnIds = new Set<string>(ids);
+const levelLabel: Record<string, string> = { start: 'Start here', next: 'Next steps', deep: 'Go deeper' };
+const description = plain(article.summary) || `${article.title}: a short article from SO-101 Suite.`;
+const links = article.links.map((l) => ({ label: l.label, ...siteHref(l.href, learnIds) }));
+const site = Astro.site ?? new URL('https://so101-suite.wendor-d8f.workers.dev');
+const jsonLd = {
+  '@context': 'https://schema.org', '@type': 'Article', headline: article.title, description,
+  mainEntityOfPage: new URL(`/learn/${article.id}/`, site).href, isAccessibleForFree: true,
+  author: { '@type': 'Organization', name: 'SO-101 Suite contributors' },
+};
+---
+<Base title={article.title} description={description} type="article" jsonLd={jsonLd}>
+  <div class="wrap narrow page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/learn/">Learn</a><span aria-hidden="true">/</span><span>{article.title}</span></nav>
+    <div class="article-meta">
+      <span class="badge accent">{levelLabel[article.level] ?? 'Learn'}</span>
+      {article.minutes ? <span>{article.minutes} min read</span> : null}
+    </div>
+    <h1 style="font-size:clamp(2rem,4vw + .5rem,3.2rem)">{article.title}</h1>
+    {article.summary && <p class="lead" set:html={inline(article.summary, learnIds)} />}
+  </div>
+  <article class="wrap narrow" style="padding-bottom:var(--s7)">
+    <div class="prose">
+      <LearnBody body={article.body} learnIds={learnIds} />
+    </div>
+
+    <div class="callout tip big">
+      <Icon name="play" />
+      <div class="ct"><span class="tt">See it in the app</span><p>This article is also inside the app, next to the 3D arm. <a href={`/demo/#/learn/${article.id}`}>Open it in the live demo.</a></p></div>
+    </div>
+
+    {links.length > 0 && (
+      <aside class="related" aria-labelledby="related-h">
+        <h2 id="related-h">Keep going</h2>
+        <ul>
+          {links.map((l) => (
+            <li><a href={l.href} {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{l.label}</a>{l.app ? <span class="muted"> (opens the demo)</span> : null}</li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
+    <nav class="article-nav" aria-label="More articles">
+      {prev ? <a href={`/learn/${prev.id}/`} rel="prev"><small>Previous</small><span>{prev.title}</span></a> : <span></span>}
+      {next ? <a class="next" href={`/learn/${next.id}/`} rel="next"><small>Next</small><span>{next.title}</span></a> : null}
+    </nav>
+  </article>
+</Base>

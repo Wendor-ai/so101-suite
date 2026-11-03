@@ -1,0 +1,46 @@
+---
+import Logo from './Logo.astro';
+import { REPO, REPO_BLOB, ISSUES } from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="logo" href="/" aria-label="SO-101 Suite, home"><Logo /><span>SO-101 Suite</span></a>
+        <p class="blurb">A free, open-source web app to set up, calibrate and learn your SO-101 robot arm.</p>
+      </div>
+      <nav aria-label="Product">
+        <h2>Product</h2>
+        <ul>
+          <li><a href="/demo/">Live demo</a></li>
+          <li><a href="/features/">Features</a></li>
+          <li><a href="/get-started/">Get started</a></li>
+          <li><a href="/modules/">Modules</a></li>
+          <li><a href="/ai/">For AI agents</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Learn">
+        <h2>Learn</h2>
+        <ul>
+          <li><a href="/learn/">Learn</a></li>
+          <li><a href="/glossary/">Glossary</a></li>
+          <li><a href="/docs/">Docs</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Project">
+        <h2>Project</h2>
+        <ul>
+          <li><a href={REPO} target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href={ISSUES} target="_blank" rel="noopener noreferrer">Report an issue</a></li>
+          <li><a href={`${REPO_BLOB}/LICENSE`} target="_blank" rel="noopener noreferrer">AGPL-3.0 licence</a></li>
+          <li><a href="/about/">About &amp; credits</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="legal">
+      <p><strong>Independent community project.</strong> Not affiliated with, endorsed by, or sponsored by Hugging Face / LeRobot, The Robot Studio / SO-ARM100, or Feetech. Product and project names belong to their owners. <a href="/about/#independent">More on About</a>.</p>
+      <p>&copy; {year} Wendor AI and SO-101 Suite contributors. Open source under the AGPL-3.0-or-later licence. This site has no analytics, no cookies and loads nothing from other sites.</p>
+    </div>
+  </div>
+</footer>

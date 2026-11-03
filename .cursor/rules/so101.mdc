@@ -1,0 +1,37 @@
+---
+description: SO-101 Suite project rules. Read AGENTS.md for the full version.
+alwaysApply: true
+---
+
+# SO-101 Suite
+
+Free, open-source (AGPL-3.0-or-later), beginner-friendly software for the SO-101 robot arm: a Python package (`so101/`), a stdlib HTTP server (`app/server.py`) and a plain HTML/CSS/ES-module web app (`app/suite/`, no build step, no npm, no CDN). **Read `AGENTS.md` first**; the skills in `.claude/skills/*/SKILL.md` are step-by-step procedures you can follow in Cursor too.
+
+## Commands
+
+- Setup: `./setup.sh` (macOS/Linux/Pi), `.\setup.ps1` (Windows); development: `uv sync --extra dev`
+- Demo (simulated arms and cameras): `uv run so101 start --demo --no-browser --port 8150`
+- Python tests: `SO101_NO_REAL_PORTS=1 uv run pytest -q`
+- JavaScript tests: `node --test "tests/js/*.test.mjs"` (quote the glob)
+- Website: `cd site && pnpm install && pnpm build && pnpm check`
+- Checklist as text: `uv run so101 doctor [--port N] [--demo]`
+
+## Hard rules
+
+- **Never open a real serial port** in tests or while developing: use demo mode and `SO101_NO_REAL_PORTS=1`. Never start a server on port 8000; use a free high port (for example 8150) and stop it afterwards.
+- One owner per serial port: the `Arm` thread. Motor IDs are written only when exactly one motor answers.
+- The arm moves only when the person asked, after a plain sentence and an inline confirmation (`askYes`). No browser pop-ups (`alert`, `confirm`, `prompt`).
+- Every disabled button says why. Nothing fails silently: a black camera box is a bug, show the reason. Every state has a way out (never stuck).
+- Never rebuild the DOM on every 500 ms tick; use `ctx.onChange`. Clean up in the function `render` returns.
+- Gripper perpendicular; never carry on after a failed grasp (holding means finger gap, not load); the bowl is an obstacle; load guard stops at 70% (85% wrist roll) for 3 reads or 68 degrees C.
+- Zero is the middle of the calibrated range, not the "centred pose".
+- Physical instructions: numbered, one action each, only name buttons that exist, a visible check and an "if not".
+- Voice: second person, short, verbs first. Words: Leader arm / Follower arm, Motor ID, Joint, Jaw, Calibrate, Module, Demo mode. Never master/slave.
+- Secrets only in `.env`. Never commit calibration files, `~/.so101` data, serial numbers, IPs, usernames or photos.
+- Keep the server demo (`so101/demo.py`) and the browser mock (`app/suite/js/mock/*`) in step; `tests/checklist_cases.json` is shared by both test suites.
+
+## Definition of done
+
+Tests green, change click-tested in the demo at 1280 px and 360 px (dark and light, no console errors), docs updated, no personal data, and a plain statement of what you could not test (real hardware, Windows).
+
+Do not touch files you were not asked to change. Only commit when asked; commit messages are short imperative sentences.

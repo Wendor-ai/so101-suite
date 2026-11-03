@@ -1,0 +1,1297 @@
+[
+ {
+  "name": "nothing_connected",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "adapter_found",
+   "statuses": {
+    "python": "ok",
+    "uv": "ok",
+    "serial_permission": "skip",
+    "adapter_found": "todo",
+    "follower_connected": "todo",
+    "follower_motors": "todo",
+    "follower_calibrated": "todo",
+    "leader_connected": "skip",
+    "leader_motors": "skip",
+    "leader_calibrated": "skip",
+    "camera_found": "todo",
+    "camera_working": "todo",
+    "camera_mapped": "todo",
+    "assembly_done": "todo"
+   }
+  }
+ },
+ {
+  "name": "linux_user_not_in_dialout",
+  "snapshot": {
+   "platform": {
+    "os": "linux",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": false
+   },
+   "ports": [
+    {
+     "path": "/dev/ttyACM0",
+     "likely_servo_board": true,
+     "role": null
+    }
+   ],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "serial_permission",
+   "statuses": {
+    "serial_permission": "fail",
+    "adapter_found": "ok",
+    "follower_connected": "todo"
+   }
+  }
+ },
+ {
+  "name": "linux_user_in_dialout",
+  "snapshot": {
+   "platform": {
+    "os": "linux",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": true
+   },
+   "ports": [
+    {
+     "path": "/dev/ttyACM0",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/ttyACM0",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "camera_found",
+   "statuses": {
+    "serial_permission": "ok",
+    "adapter_found": "ok",
+    "follower_connected": "ok",
+    "follower_motors": "ok",
+    "follower_calibrated": "ok"
+   }
+  }
+ },
+ {
+  "name": "follower_with_four_of_six_motors",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "calibrated": false,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "follower_motors",
+   "statuses": {
+    "adapter_found": "ok",
+    "follower_connected": "ok",
+    "follower_motors": "fail",
+    "follower_calibrated": "todo",
+    "assembly_done": "todo"
+   }
+  }
+ },
+ {
+  "name": "follower_ok_uncalibrated",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": false,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "follower_calibrated",
+   "statuses": {
+    "follower_connected": "ok",
+    "follower_motors": "ok",
+    "follower_calibrated": "todo",
+    "assembly_done": "ok",
+    "leader_connected": "skip"
+   }
+  }
+ },
+ {
+  "name": "adapter_plugged_but_no_motor_answers",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": false,
+     "motor_ids": [],
+     "calibrated": false,
+     "err": "no motor answered"
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "follower_connected",
+   "statuses": {
+    "adapter_found": "ok",
+    "follower_connected": "fail",
+    "follower_motors": "todo"
+   }
+  }
+ },
+ {
+  "name": "adapter_plugged_app_not_connected_yet",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": null
+    }
+   ],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "follower_connected",
+   "statuses": {
+    "adapter_found": "ok",
+    "follower_connected": "todo"
+   }
+  }
+ },
+ {
+  "name": "leader_optional_absent_and_cameras_skipped",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": true
+   }
+  },
+  "expect": {
+   "next": null,
+   "statuses": {
+    "follower_calibrated": "ok",
+    "leader_connected": "skip",
+    "leader_motors": "skip",
+    "leader_calibrated": "skip",
+    "camera_found": "skip",
+    "camera_working": "skip",
+    "camera_mapped": "skip",
+    "assembly_done": "ok"
+   }
+  }
+ },
+ {
+  "name": "leader_with_three_of_six_motors",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    },
+    {
+     "path": "/dev/tty.usbmodem201",
+     "likely_servo_board": true,
+     "role": "leader"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": {
+     "port": "/dev/tty.usbmodem201",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3
+     ],
+     "calibrated": false,
+     "err": ""
+    }
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "leader_motors",
+   "statuses": {
+    "leader_connected": "ok",
+    "leader_motors": "fail",
+    "leader_calibrated": "todo"
+   }
+  }
+ },
+ {
+  "name": "leader_ok_uncalibrated",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    },
+    {
+     "path": "/dev/tty.usbmodem201",
+     "likely_servo_board": true,
+     "role": "leader"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": {
+     "port": "/dev/tty.usbmodem201",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": false,
+     "err": ""
+    }
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "leader_calibrated",
+   "statuses": {
+    "leader_connected": "ok",
+    "leader_motors": "ok",
+    "leader_calibrated": "todo"
+   }
+  }
+ },
+ {
+  "name": "everything_ok",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    },
+    {
+     "path": "/dev/tty.usbmodem201",
+     "likely_servo_board": true,
+     "role": "leader"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": {
+     "port": "/dev/tty.usbmodem201",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    }
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": [
+     {
+      "ok": true,
+      "calibrated": true,
+      "err": ""
+     }
+    ]
+   },
+   "progress": {
+    "assembly_done": true,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": null,
+   "statuses": {
+    "python": "ok",
+    "uv": "ok",
+    "serial_permission": "skip",
+    "adapter_found": "ok",
+    "follower_connected": "ok",
+    "follower_motors": "ok",
+    "follower_calibrated": "ok",
+    "leader_connected": "ok",
+    "leader_motors": "ok",
+    "leader_calibrated": "ok",
+    "camera_found": "ok",
+    "camera_working": "ok",
+    "camera_mapped": "ok",
+    "assembly_done": "ok"
+   }
+  }
+ },
+ {
+  "name": "camera_found_but_not_working",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": [
+     {
+      "ok": false,
+      "calibrated": false,
+      "err": "Camera is in use by another app"
+     }
+    ]
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "camera_working",
+   "statuses": {
+    "camera_found": "ok",
+    "camera_working": "fail",
+    "camera_mapped": "todo"
+   }
+  }
+ },
+ {
+  "name": "camera_detected_but_not_added",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 1,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "camera_working",
+   "statuses": {
+    "camera_found": "ok",
+    "camera_working": "todo",
+    "camera_mapped": "todo"
+   }
+  }
+ },
+ {
+  "name": "camera_working_but_not_mapped",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": [
+     {
+      "ok": true,
+      "calibrated": false,
+      "err": ""
+     }
+    ]
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "camera_mapped",
+   "statuses": {
+    "camera_found": "ok",
+    "camera_working": "ok",
+    "camera_mapped": "todo"
+   }
+  }
+ },
+ {
+  "name": "camera_mapped",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": [
+     {
+      "ok": false,
+      "calibrated": false,
+      "err": "starting"
+     },
+     {
+      "ok": true,
+      "calibrated": true,
+      "err": ""
+     }
+    ]
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": null,
+   "statuses": {
+    "camera_found": "ok",
+    "camera_working": "ok",
+    "camera_mapped": "ok"
+   }
+  }
+ },
+ {
+  "name": "assembly_ticked_nothing_else",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": true,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "adapter_found",
+   "statuses": {
+    "assembly_done": "ok",
+    "adapter_found": "todo"
+   }
+  }
+ },
+ {
+  "name": "windows_everything_ok",
+  "snapshot": {
+   "platform": {
+    "os": "windows",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "COM3",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "COM3",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": [
+     {
+      "ok": true,
+      "calibrated": true,
+      "err": ""
+     }
+    ]
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": null,
+   "statuses": {
+    "serial_permission": "skip",
+    "adapter_found": "ok",
+    "follower_connected": "ok",
+    "follower_calibrated": "ok",
+    "camera_mapped": "ok",
+    "assembly_done": "ok"
+   }
+  }
+ },
+ {
+  "name": "windows_nothing_connected",
+  "snapshot": {
+   "platform": {
+    "os": "windows",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "adapter_found",
+   "statuses": {
+    "serial_permission": "skip",
+    "adapter_found": "todo",
+    "python": "ok"
+   }
+  }
+ },
+ {
+  "name": "python_too_old",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.8.10",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "python",
+   "statuses": {
+    "python": "fail",
+    "uv": "ok"
+   }
+  }
+ },
+ {
+  "name": "uv_missing_is_not_blocking",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": false,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": true
+   }
+  },
+  "expect": {
+   "next": null,
+   "statuses": {
+    "uv": "skip",
+    "follower_calibrated": "ok"
+   }
+  }
+ },
+ {
+  "name": "assembly_ticked_with_dotted_progress_keys",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly.done": true,
+    "assembly.step.base": true,
+    "cameras.skipped": false
+   }
+  },
+  "expect": {
+   "next": "adapter_found",
+   "statuses": {
+    "assembly_done": "ok",
+    "adapter_found": "todo"
+   }
+  }
+ },
+ {
+  "name": "cameras_skipped_with_dotted_progress_key",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/tty.usbmodem101",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/tty.usbmodem101",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "cameras.skipped": true
+   }
+  },
+  "expect": {
+   "next": null,
+   "statuses": {
+    "follower_calibrated": "ok",
+    "leader_connected": "skip",
+    "leader_motors": "skip",
+    "leader_calibrated": "skip",
+    "camera_found": "skip",
+    "camera_working": "skip",
+    "camera_mapped": "skip",
+    "assembly_done": "ok"
+   }
+  }
+ },
+ {
+  "name": "one_arm_role_only_guessed",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/ttyACM0",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/ttyACM0",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": "",
+     "role_confirmed": false
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "arm_roles",
+   "statuses": {
+    "arm_roles": "todo",
+    "follower_connected": "ok",
+    "follower_calibrated": "ok"
+   }
+  }
+ },
+ {
+  "name": "one_arm_role_confirmed",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/ttyACM0",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/ttyACM0",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": "",
+     "role_confirmed": true
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "camera_found",
+   "statuses": {
+    "arm_roles": "ok"
+   }
+  }
+ },
+ {
+  "name": "no_arm_no_role_question",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [],
+   "arms": {
+    "follower": null,
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "adapter_found",
+   "statuses": {
+    "arm_roles": "skip"
+   }
+  }
+ },
+ {
+  "name": "old_snapshot_without_role_flag_counts_as_confirmed",
+  "snapshot": {
+   "platform": {
+    "os": "macos",
+    "python": "3.12.4",
+    "uv": true,
+    "in_dialout": null
+   },
+   "ports": [
+    {
+     "path": "/dev/ttyACM0",
+     "likely_servo_board": true,
+     "role": "follower"
+    }
+   ],
+   "arms": {
+    "follower": {
+     "port": "/dev/ttyACM0",
+     "online": true,
+     "motor_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "calibrated": true,
+     "err": ""
+    },
+    "leader": null
+   },
+   "cameras": {
+    "detected": 0,
+    "configured": []
+   },
+   "progress": {
+    "assembly_done": false,
+    "cameras_skipped": false
+   }
+  },
+  "expect": {
+   "next": "camera_found",
+   "statuses": {
+    "arm_roles": "ok"
+   }
+  }
+ }
+]

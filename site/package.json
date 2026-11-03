@@ -1,0 +1,22 @@
+{
+  "name": "so101-suite-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Marketing site and no-install demo for the SO-101 Suite (static Astro site served by Cloudflare).",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "sync": "node scripts/sync-app.mjs",
+    "dev": "node scripts/sync-app.mjs && node scripts/astro.mjs dev --port 8140",
+    "build": "node scripts/sync-app.mjs && node scripts/astro.mjs build",
+    "preview": "node scripts/astro.mjs preview --port 8141",
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^6.4.8"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

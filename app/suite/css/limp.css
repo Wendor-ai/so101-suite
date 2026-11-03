@@ -1,0 +1,18 @@
+/* limp.js: the "make the arm limp first, lowered" card. Calm: green when limp, amber when stiff, never red until something failed. */
+.limp-card{display:flex;flex-direction:column;gap:var(--s3);border-left:5px solid var(--line2)}
+.limp-card[data-state="limp"]{border-left-color:var(--ok);background:linear-gradient(135deg,var(--surface),color-mix(in srgb,var(--ok) 7%,var(--surface)))}
+.limp-card[data-state="stiff"]{border-left-color:var(--warn);background:linear-gradient(135deg,var(--surface),color-mix(in srgb,var(--warn) 8%,var(--surface)))}
+.limp-card h3{margin:0;font-size:1.12rem}
+.limp-state{display:flex;align-items:center;gap:10px;margin:0;font-size:1.08rem;font-weight:750;line-height:1.35}
+.limp-ico{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--line2);color:var(--faint)}
+.limp-ico svg{width:17px;height:17px}
+.limp-card[data-state="limp"] .limp-ico{background:var(--ok);border-color:var(--ok);color:#04130a}
+.limp-card[data-state="stiff"] .limp-ico{border-color:var(--warn);color:var(--warn)}
+.limp-note{margin:0;color:var(--muted);font-size:.95rem;line-height:1.55}
+.limp-prog{display:flex;align-items:center;gap:10px;margin:0;font-weight:650}
+.limp-card [hidden]{display:none!important}
+.limp-prog .spin{width:18px;height:18px;border-width:2.5px;flex:none}
+.limp-fail{border:1px solid color-mix(in srgb,var(--bad) 60%,transparent);background:color-mix(in srgb,var(--bad) 8%,var(--surface));border-radius:12px;padding:var(--s3) var(--s4);display:flex;flex-direction:column;gap:var(--s2)}
+.limp-fail p{margin:0;line-height:1.5}
+.limp-card .btns{display:flex;gap:var(--s2);flex-wrap:wrap}
+.limp-card .why{margin:0}

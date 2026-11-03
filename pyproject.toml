@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "so101-suite"
+version = "0.1.0"
+description = "A beginner-friendly web suite for the SO-101 robot arm: detect, assemble, calibrate, control."
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = { text = "AGPL-3.0-or-later" }
+authors = [{ name = "Wendor AI and SO-101 Suite contributors" }]
+dependencies = [
+    "feetech-servo-sdk>=1.0.0",       # provides the `scservo_sdk` module (the Feetech STS3215 bus protocol)
+    "opencv-python-headless>=4.8",
+    "numpy>=1.24",
+    "pyserial>=3.5",
+]
+
+[project.optional-dependencies]
+lerobot = ["lerobot[feetech]"]        # optional: train and run learned policies with LeRobot (large download)
+dev = ["pytest>=7.4"]
+
+[project.urls]
+Repository = "https://github.com/Wendor-ai/so101-suite"
+Issues = "https://github.com/Wendor-ai/so101-suite/issues"
+
+[project.scripts]
+so101 = "so101.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["so101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

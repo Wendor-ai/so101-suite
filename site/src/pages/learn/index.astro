@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { getLearn, getAnatomy, plain } from '../../data/content';
+
+const articles = await getLearn();
+const parts = await getAnatomy();
+const groups = [
+  { key: 'start', title: 'Start here', note: 'Plain words, no experience needed.' },
+  { key: 'next', title: 'Next steps', note: 'Once your arm moves.' },
+  { key: 'deep', title: 'Go deeper', note: 'For the curious.' },
+].map((g) => ({ ...g, items: articles.filter((a) => a.level === g.key) }));
+const other = articles.filter((a) => !['start', 'next', 'deep'].includes(a.level));
+if (other.length) groups.push({ key: 'more', title: 'More', note: '', items: other });
+---
+<Base title="Learn" description="Short, plain-language articles about your SO-101 robot arm: what the parts are, how leader and follower work, why you calibrate, and how cameras see the table.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Learn</span></nav>
+    <h1>Learn your arm</h1>
+    <p class="lead">Short articles in plain words. Each one is also inside the app, next to a 3D arm you can click. <a href="/glossary/">Stuck on a word? Open the glossary.</a></p>
+  </div>
+
+  <div class="wrap" style="padding-bottom:var(--s7)">
+    {articles.length === 0 && <div class="empty-note"><p><b>The articles are being written.</b></p><p>In the meantime, <a href="/demo/#/learn">open Learn in the live demo</a>.</p></div>}
+    {groups.filter((g) => g.items.length).map((g) => (
+      <section class="lvl" aria-labelledby={`lvl-${g.key}`}>
+        <h2 id={`lvl-${g.key}`}>{g.title} {g.note && <small>{g.note}</small>}</h2>
+        <div class="grid g3">
+          {g.items.map((a) => (
+            <a class="card lcard" href={`/learn/${a.id}/`}>
+              <h3>{a.title}</h3>
+              {a.summary && <p>{plain(a.summary)}</p>}
+              <span class="meta">{a.minutes ? <span class="badge">{a.minutes} min</span> : null}<span class="more" style="color:var(--accent-text);font-weight:700;margin-left:auto;display:inline-flex;gap:6px;align-items:center">Read <Icon name="arrow" /></span></span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    {parts.length > 0 && (
+      <section class="lvl" id="anatomy" aria-labelledby="anatomy-h">
+        <h2 id="anatomy-h">The parts of your arm <small>Click them in 3D inside the app.</small></h2>
+        <div class="grid g3">
+          {parts.map((p) => (
+            <div class="card flat">
+              <h3>{p.title}</h3>
+              <p class="muted" style="margin:var(--s2) 0 0">{plain(p.what)}</p>
+              {p.motorId ? <p style="margin:var(--s3) 0 0"><span class="badge accent">Motor {p.motorId}</span></p> : null}
+            </div>
+          ))}
+        </div>
+        <p><a class="btn primary" href="/demo/#/learn/meet-your-arm"><Icon name="play" /> Meet your arm in 3D</a></p>
+      </section>
+    )}
+  </div>
+</Base>

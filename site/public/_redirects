@@ -1,0 +1,4 @@
+# Short links. Pages adds the trailing slash to /demo, /learn and the other folders by itself.
+/try      /demo/         302
+/install  /get-started/  301
+/github   https://github.com/Wendor-ai/so101-suite  302

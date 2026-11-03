@@ -1,0 +1,51 @@
+# SO-101 Suite
+
+> A free, open-source (AGPL-3.0-or-later), beginner-friendly software suite for the SO-101 robot arm. One command installs it and opens a web app that detects the hardware, walks a first-time builder through motor IDs, assembly, calibration (every joint reads 0 at the middle of its range) and cameras, and teaches what each part is. It has a documented HTTP API, drop-in modules and a demo mode with simulated hardware, so AI agents can work on it without a robot.
+
+SO-101 Suite is an independent community project. It is not affiliated with Hugging Face (LeRobot), The Robot Studio (SO-ARM100) or Feetech. Python 3.10 to 3.13 (stdlib HTTP server, scservo_sdk, OpenCV, NumPy, pySerial), plus a plain HTML/CSS/ES-module web app with no build step. Windows is untested.
+
+Start with AGENTS.md. Hard rules: never open a real serial port in tests (SO101_NO_REAL_PORTS=1, use demo mode); never start a server on port 8000 (use a free high port such as 8150 with --no-browser, and stop it); the arm moves only when the person asked; no browser pop-ups; every disabled button says why; zero is the middle of the calibrated range.
+
+## Start here
+
+- [AGENTS.md](https://github.com/Wendor-ai/so101-suite/blob/main/AGENTS.md): commands, repo map, hard rules, how to extend, definition of done
+- [README.md](https://github.com/Wendor-ai/so101-suite/blob/main/README.md): what it is, quickstart for macOS, Linux, Raspberry Pi and Windows
+- [CONTRIBUTING.md](https://github.com/Wendor-ai/so101-suite/blob/main/CONTRIBUTING.md): how to contribute
+
+## Commands
+
+- `./setup.sh` (macOS, Linux, Raspberry Pi) or `.\setup.ps1` (Windows): install and start
+- `uv run so101 demo --no-browser --port 8150`: the app with simulated arms and cameras
+- `uv run so101 doctor [--json]`: the checklist (what is connected, what is left) as text or JSON
+- `uv run so101 mcp [--url URL] [--allow-motion]`: MCP server for AI clients, talks to the running app
+- `SO101_NO_REAL_PORTS=1 uv run pytest -q` and `node --test "tests/js/*.test.mjs"`: the tests
+
+## Docs
+
+- [Architecture](https://github.com/Wendor-ai/so101-suite/blob/main/docs/ARCHITECTURE.md): layers, threads, demo mode, state
+- [HTTP API](https://github.com/Wendor-ai/so101-suite/blob/main/docs/API.md): every route, with request and response shapes
+- [MCP server](https://github.com/Wendor-ai/so101-suite/blob/main/docs/MCP.md): `uv run so101 mcp`, tools for AI clients (read-only by default)
+- [Modules](https://github.com/Wendor-ai/so101-suite/blob/main/docs/MODULES.md): add a page or an API by dropping a folder into modules/
+- [Calibration](https://github.com/Wendor-ai/so101-suite/blob/main/docs/CALIBRATION.md): arm calibration, the file format, camera mapping
+- [Defaults](https://github.com/Wendor-ai/so101-suite/blob/main/docs/DEFAULTS.md): every factory default and who reads it
+- [Configuration](https://github.com/Wendor-ai/so101-suite/blob/main/docs/CONFIGURATION.md): the git-ignored .env file and every setting it can hold
+- [Troubleshooting](https://github.com/Wendor-ai/so101-suite/blob/main/docs/TROUBLESHOOTING.md): Test motors, Inspector, doctor, symptoms and fixes
+- [Hardware](https://github.com/Wendor-ai/so101-suite/blob/main/docs/HARDWARE.md): what the app expects from the arm, board, power and cameras
+- [Lessons learned](https://github.com/Wendor-ai/so101-suite/blob/main/docs/LEARNINGS.md): hard-won hardware and safety lessons behind the rules
+- [FAQ](https://github.com/Wendor-ai/so101-suite/blob/main/docs/FAQ.md) and [Roadmap](https://github.com/Wendor-ai/so101-suite/blob/main/docs/ROADMAP.md)
+
+## Agent skills (step-by-step procedures)
+
+- [add-module](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/add-module/SKILL.md), [add-page](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/add-page/SKILL.md), [add-camera](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/add-camera/SKILL.md), [add-learn-article](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/add-learn-article/SKILL.md)
+- [calibrate-arm](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/calibrate-arm/SKILL.md), [calibrate-camera-by-clicking](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/calibrate-camera-by-clicking/SKILL.md), [debug-hardware](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/debug-hardware/SKILL.md)
+- [explain-for-beginners](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/explain-for-beginners/SKILL.md), [write-physical-instructions](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/write-physical-instructions/SKILL.md), [run-demo-and-tests](https://github.com/Wendor-ai/so101-suite/blob/main/.claude/skills/run-demo-and-tests/SKILL.md)
+
+## HTTP API at a glance
+
+JSON over HTTP on the app's port (default 8000), no authentication, errors are `{"error": "<sentence>"}`. `GET /api/suite/checklist` (what is left), `GET /api/suite/snapshot/<i>.jpg` (a camera picture), `GET /api/suite/diagnostics` (text report), `POST /api/suite/motors` (scan, ping, wiggle, set_id), `GET /api/state` (live arms and calibration), `POST /api/calib/<armIndex>/<start|center|finish|cancel>`, `POST /api/pp/<teach|release|stop|...>`, `ANY /api/m/<id>/<path>` (modules). Full list in docs/API.md.
+
+## Optional
+
+- [Official SO-ARM100 hardware](https://github.com/TheRobotStudio/SO-ARM100)
+- [LeRobot SO-101 guide](https://huggingface.co/docs/lerobot/so101)
+- [NOTICE.md](https://github.com/Wendor-ai/so101-suite/blob/main/NOTICE.md): third-party software and licences

@@ -1,0 +1,28 @@
+---
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+import { NAV, REPO } from '../data/site';
+const path = Astro.url.pathname;
+const current = (href: string) => (path === href || path.startsWith(href) ? 'page' : undefined);
+---
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="SO-101 Suite, home"><Logo /><span>SO-101 Suite<small>set up · calibrate · learn</small></span></a>
+    <nav class="main-nav" aria-label="Main">
+      {NAV.map((n) => <a href={n.href} aria-current={current(n.href)}>{n.label}</a>)}
+    </nav>
+    <div class="header-end">
+      <a class="icon-btn" href={REPO} target="_blank" rel="noopener noreferrer" aria-label="SO-101 Suite on GitHub (opens in a new tab)"><Icon name="github" /></a>
+      <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme"><Icon name="sun" class="i-sun" /><Icon name="moon" class="i-moon" /></button>
+      <a class="btn primary sm demo-btn" href="/demo/"><Icon name="play" /> Try the live demo</a>
+      <details class="menu">
+        <summary class="icon-btn" aria-label="Menu"><Icon name="menu" class="i-open" /><Icon name="close" class="i-close" /></summary>
+        <nav class="menu-panel" aria-label="Menu">
+          {NAV.map((n) => <a href={n.href} aria-current={current(n.href)}>{n.label}</a>)}
+          <a href="/about/" aria-current={current('/about/')}>About</a>
+          <a href="/demo/" style="color:var(--accent-text)">Try the live demo</a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>

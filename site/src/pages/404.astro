@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+---
+<Base title="Page not found" description="That page does not exist." noindex>
+  <div class="wrap nf">
+    <div class="big" aria-hidden="true">404</div>
+    <h1 style="font-size:clamp(1.8rem,3vw + .6rem,2.6rem)">This page wandered off.</h1>
+    <p class="lead">The link may be old, or mistyped. Here are some places that do exist.</p>
+    <div class="row" style="justify-content:center">
+      <a class="btn primary" href="/"><Icon name="home" /> Home</a>
+      <a class="btn" href="/demo/"><Icon name="play" /> Try the live demo</a>
+      <a class="btn" href="/get-started/">Get started</a>
+      <a class="btn" href="/learn/">Learn</a>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import { getGlossary, inline, plain } from '../data/content';
+
+const terms = await getGlossary();
+const byId = new Map(terms.map((t) => [t.id, t]));
+const letterOf = (t: string) => (t.trim()[0] ?? '#').toUpperCase().replace(/[^A-Z]/, '#');
+const letters = [...new Set(terms.map((t) => letterOf(t.term)))].sort();
+let last = '';
+---
+<Base title="Glossary" description="Every term in SO-101 Suite explained in plain words: servo, motor ID, calibration, leader and follower arm, kinematics and more.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Glossary</span></nav>
+    <h1>Glossary</h1>
+    <p class="lead">Every unfamiliar word, in plain language. In the app, tap any dotted-underline word to see the same explanation in a card.</p>
+  </div>
+  <div class="wrap" style="padding-bottom:var(--s7)">
+    {terms.length === 0 ? (
+      <div class="empty-note"><p><b>The glossary is being written.</b></p><p>In the meantime, <a href="/demo/#/glossary">open it in the live demo</a>.</p></div>
+    ) : (
+      <>
+        <div class="gl-tools">
+          <label class="sr-only" for="gl-filter">Search the glossary</label>
+          <input class="input" id="gl-filter" type="search" placeholder="Search terms, for example: motor ID" autocomplete="off" data-gl-filter />
+          <nav class="az" aria-label="Jump to a letter">{letters.map((l) => <a href={`#letter-${l}`}>{l}</a>)}</nav>
+          <span class="muted" role="status" aria-live="polite" data-gl-count></span>
+        </div>
+        <div class="gl">
+          {terms.map((t) => {
+            const l = letterOf(t.term);
+            const head = l !== last; last = l;
+            return (
+              <>
+                {head && <h2 class="gl-letter" id={`letter-${l}`} data-gl-letter>{l}</h2>}
+                <article class="card flat gl-item" id={t.id} data-gl-item data-text={plain(`${t.term} ${t.short} ${t.long ?? ''}`).toLowerCase()}>
+                  <h3>{t.term}</h3>
+                  <p class="short" set:html={inline(t.short)} />
+                  {t.long && <p class="long" set:html={inline(t.long)} />}
+                  {t.see.filter((s) => byId.has(s)).length > 0 && (
+                    <div class="see"><span>See also</span>{t.see.filter((s) => byId.has(s)).map((s) => <a href={`#${s}`}>{byId.get(s)!.term}</a>)}</div>
+                  )}
+                </article>
+              </>
+            );
+          })}
+        </div>
+      </>
+    )}
+  </div>
+</Base>
