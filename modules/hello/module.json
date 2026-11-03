@@ -1,0 +1,11 @@
+{
+  "id": "hello",
+  "name": "Hello module",
+  "description": "The smallest possible module: one page and one tiny backend. Copy this folder to start your own.",
+  "version": "1.0.0",
+  "author": "SO-101 Suite contributors",
+  "license": "AGPL-3.0-or-later",
+  "requires": [],
+  "pages": [{ "id": "hello", "title": "Hello", "icon": "hand", "script": "ui.js" }],
+  "backend": "backend.py"
+}

@@ -1,0 +1,71 @@
+name: CI
+
+# Runs the tests on every push to main and every pull request. It never deploys and uses no secrets.
+# Real serial ports are never opened: tests run with SO101_NO_REAL_PORTS=1 and use the demo (simulated) hardware.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # Windows has not been tested on real hardware yet, so its result is informational for now.
+    # Remove the next line once the Windows job is green.
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      SO101_NO_REAL_PORTS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install (Python 3.12 from .python-version, plus pytest)
+        run: uv sync --extra dev
+      - name: Run the Python tests
+        run: uv run pytest -q
+
+  node:
+    name: JavaScript tests (in-browser mock backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The mock test also runs the Python checklist (standard library only) with the runner's own python3 and compares the output.
+      # Quote the glob: on Node 22 a bare directory argument fails.
+      - name: Run node:test
+        run: node --test "tests/js/*.test.mjs"
+
+  site:
+    name: Website build and link check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # site/package.json has no "packageManager" field, so name the pnpm major here (the one the lockfile was made with).
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - run: pnpm install --frozen-lockfile
+      - name: Build (copies app/suite, docs and modules into the site)
+        run: pnpm build
+      - name: Check links, alt text and other problems
+        run: pnpm check

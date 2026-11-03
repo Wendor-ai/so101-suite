@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Logo from '../components/Logo.astro';
+import { REPO } from '../data/site';
+---
+<Base title="Live demo" description="Try the real SO-101 Suite app in your browser. Simulated hardware, nothing to install, nothing you click is real." bare bodyClass="demo">
+  <a class="skip" href="#demo-main">Skip to the demo</a>
+  <header class="demo-bar">
+    <a class="btn ghost sm" href="/"><Icon name="back" /> Back to site</a>
+    <div class="title"><Logo size={24} />Live demo <span>the real app, simulated hardware</span></div>
+    <div class="end">
+      <a class="btn sm" href="/get-started/">Install</a>
+      <a class="btn sm ghost" href={REPO} target="_blank" rel="noopener noreferrer" aria-label="SO-101 Suite on GitHub (opens in a new tab)"><Icon name="github" /><span class="gh-label">GitHub</span></a>
+      <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme"><Icon name="sun" class="i-sun" /><Icon name="moon" class="i-moon" /></button>
+    </div>
+  </header>
+  <main id="demo-main" class="demo-main" tabindex="-1">
+    <div class="demo-load" data-demo-load>
+      <div>
+        <div class="spin" aria-hidden="true"></div>
+        <p data-demo-msg role="status">Loading the demo…</p>
+        <noscript><p>The demo is the real app, and it needs JavaScript. You can read about it on the <a href="/features/">features page</a> instead.</p></noscript>
+        <p><a data-demo-open href="/app/?demo=1" target="_blank" rel="noopener">Open the demo in its own tab</a></p>
+      </div>
+    </div>
+    <iframe data-demo-frame title="SO-101 Suite live demo: the real app running with simulated hardware" referrerpolicy="no-referrer" allow="fullscreen"></iframe>
+  </main>
+  <script src="../scripts/demo.js"></script>
+</Base>

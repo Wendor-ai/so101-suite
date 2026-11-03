@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { render } from 'astro:content';
+import { getDocs } from '../../data/docs';
+
+export async function getStaticPaths() {
+  const docs = await getDocs();
+  return docs.map((d) => ({ params: { id: d.id }, props: { doc: d } }));
+}
+const { doc } = Astro.props;
+const docs = await getDocs();
+const { Content, headings } = await render(doc.entry);
+const hasH1 = headings.some((h: any) => h.depth === 1);
+---
+<Base title={doc.title} description={doc.description || undefined} type="article">
+  <div class="wrap page-head" style="padding-bottom:0">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/docs/">Docs</a><span aria-hidden="true">/</span><span>{doc.title}</span></nav>
+  </div>
+  <div class="wrap" style="padding-bottom:var(--s7);padding-top:var(--s4)">
+    <div class="doc-layout">
+      <nav class="doc-side" aria-label="Docs">
+        <h2>Docs</h2>
+        {docs.map((d) => <a href={`/docs/${d.id}/`} aria-current={d.id === doc.id ? 'page' : undefined}>{d.title}</a>)}
+      </nav>
+      <article>
+        {!hasH1 && <h1 style="margin-bottom:var(--s5)">{doc.title}</h1>}
+        <div class="prose">
+          <Content />
+        </div>
+        <p class="edit-link"><a href={doc.edit} target="_blank" rel="noopener noreferrer">View or edit this page on GitHub <Icon name="external" /></a></p>
+      </article>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,78 @@
+/* Assemble page. Uses tokens and components from suite.css / components.css. */
+.asm{min-width:0}
+.asm-ids .callout .row{margin-top:var(--s2)}
+.asm-block h3{margin-bottom:var(--s2)}
+.asm-go{padding-top:var(--s2)}
+
+/* parts checklist */
+.asm-parts{list-style:none;margin:var(--s3) 0 0;padding:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.asm-parts li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--s3);align-items:start;padding:var(--s3) var(--s4);border-top:1px solid var(--line)}
+.asm-parts li:first-child{border-top:0}
+.asm-parts input[type=checkbox],.asm-check input[type=checkbox]{width:22px;height:22px;margin:2px 0 0;accent-color:var(--accent);cursor:pointer;flex:none}
+.asm-parts label{display:flex;flex-direction:column;gap:2px;cursor:pointer;min-width:0}
+.asm-part-t{font-weight:650;display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.asm-part-n{font-size:.88rem}
+.asm-parts input:checked+label .asm-part-t{text-decoration:line-through;text-decoration-color:var(--faint);color:var(--muted)}
+.asm-first{margin:var(--s2) 0 0;padding-left:1.4em;display:flex;flex-direction:column;gap:var(--s2)}
+.asm-first li{line-height:1.55;padding-left:4px}
+
+/* arm tabs, progress, stepper */
+.asm-top{display:flex;flex-direction:column;gap:var(--s3)}
+.asm-tabs{margin-bottom:0}
+.asm-tab{display:inline-flex;gap:6px}
+.asm-tabs .tab{display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.asm-tabs .tab svg{width:16px;height:16px;color:var(--ok)}
+.asm-tabn{font-size:.78rem;font-weight:750;padding:1px 8px;border-radius:99px;border:1px solid var(--line2);color:var(--muted)}
+.asm-kind{margin:0;font-size:.92rem}
+.asm-prog{display:flex;align-items:center;gap:var(--s3)}
+.asm-prog .bar{flex:1}
+.asm-prog span{font-size:.86rem;white-space:nowrap}
+.asm-stepper{list-style:none;margin:0;padding:2px 2px var(--s2);display:flex;gap:var(--s2);overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin}
+.asm-stepper li{flex:1 0 auto;min-width:92px;scroll-snap-align:start}
+.asm-dot{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;cursor:pointer;text-align:center;transition:border-color var(--t),background var(--t)}
+.asm-dot:hover{border-color:var(--faint);color:var(--text)}
+.asm-num{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--line2);font-weight:800;font-size:.9rem;color:var(--faint);background:var(--bg)}
+.asm-num svg{width:16px;height:16px}
+.asm-lab{display:flex;flex-direction:column;font-weight:700;font-size:.84rem;line-height:1.2;color:inherit}
+.asm-lab small{font-weight:500;font-size:.72rem;color:var(--faint);margin-top:1px}
+.asm-dot.done .asm-num{background:var(--ok);border-color:var(--ok);color:#04130a}
+.asm-dot.cur{border-color:var(--accent);background:var(--accent-soft);color:var(--text);box-shadow:0 0 0 3px var(--accent-soft)}
+.asm-dot.cur .asm-num{border-color:var(--accent);color:var(--text)}
+.asm-dot.cur.done .asm-num{color:#04130a}
+@media (max-width:520px){.asm-stepper li{min-width:78px}.asm-lab small{display:none}}
+
+/* the card */
+.asm-card{scroll-margin-top:72px}
+.asm-card .asm-card-head{outline:none}
+.asm-needs{border:1px solid var(--line);border-radius:var(--r);background:var(--surface2);padding:0}
+.asm-needs summary{cursor:pointer;padding:10px var(--s4);font-weight:700;min-height:44px;display:flex;align-items:center}
+.asm-needs ul{margin:0;padding:0 var(--s4) var(--s3) calc(var(--s4) + 1.2em);display:flex;flex-direction:column;gap:4px;font-size:.94rem}
+.asm-ul{margin:0;padding-left:1.2em}.asm-ul li+li{margin-top:4px}
+.asm-extras{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4);align-items:start}
+@media (max-width:860px){.asm-extras{grid-template-columns:1fr}}
+.asm-check{border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4);background:var(--surface2)}
+.asm-check h4{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin-bottom:var(--s2)}
+.asm-check ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.asm-check li{display:flex;gap:10px;align-items:flex-start}.asm-check label{cursor:pointer;line-height:1.45}
+.asm-check input:checked+label{color:var(--muted)}
+
+/* figures: stay in view while the long action list scrolls */
+.asm-card .stepcard__body>figure{align-self:start}
+.asm-card .stepcard__body>figure.stick{position:sticky;top:72px}
+@media (max-width:860px){.asm-card .stepcard__body>figure.stick{position:static}}
+.asm-figs{display:flex;flex-direction:column;gap:var(--s4)}
+.asm-fig.also{padding-top:var(--s3);border-top:1px dashed var(--line2)}
+.asm-fig h4{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin-bottom:var(--s2)}
+.asm-cap{font-size:.84rem;color:var(--muted);margin:var(--s2) 0 0!important}
+.stepcard__fig .asm-verify{display:flex;gap:8px;align-items:flex-start;margin:0;font-size:.82rem;color:var(--muted);line-height:1.45}
+.stepcard__fig .asm-verify svg.ico{width:16px;height:16px;flex:none;display:inline-block;margin-top:2px;color:var(--info)}
+.stepcard__fig .rw svg.dg{width:100%}
+.asm-foot{align-items:flex-start}
+.asm-foot .actions{width:100%}
+.asm-skip,.asm-links{font-size:.9rem;margin:0}
+.asm-skipped{display:flex;gap:var(--s3);align-items:flex-start}.asm-skipped svg{width:24px;height:24px;color:var(--ok);flex:none}
+
+/* finished */
+.asm-done{display:flex;flex-direction:column;gap:var(--s3)}.asm-done .lead{margin:0}.asm-done h2{font-size:1.8rem}
+.asm-done-title{outline:none}
+@media (min-width:900px){.asm-needs ul{column-count:2;column-gap:var(--s5)}.asm-needs li{break-inside:avoid}}

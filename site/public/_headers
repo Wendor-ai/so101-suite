@@ -1,0 +1,41 @@
+# Cloudflare Pages response headers. See https://developers.cloudflare.com/pages/configuration/headers/
+# No page on this site needs an inline script or a third-party origin, so the policy is strict.
+# Rules that match the same URL are merged by Pages, so the cache rules below never overlap each other.
+
+/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000
+
+# Hashed build output: safe to cache forever.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The demo app (a copy of app/suite). Big static files cache for a year, code revalidates hourly.
+/app/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Robots-Tag: noindex
+/app/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Robots-Tag: noindex
+/app/js/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  X-Robots-Tag: noindex
+/app/css/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  X-Robots-Tag: noindex
+/app/index.html
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  X-Robots-Tag: noindex
+/app/
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  X-Robots-Tag: noindex
+
+# Screenshots keep their file names when they are refreshed, so one day.
+/screenshots/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

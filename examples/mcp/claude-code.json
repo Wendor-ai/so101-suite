@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "so101": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--project", "REPLACE_WITH_ABSOLUTE_PATH_TO_YOUR_so101-suite_FOLDER", "so101", "mcp"],
+      "env": {
+        "SO101_URL": "http://127.0.0.1:8000"
+      }
+    }
+  }
+}

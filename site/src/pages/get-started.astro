@@ -1,0 +1,109 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import InstallTabs from '../components/InstallTabs.astro';
+import SectionHead from '../components/SectionHead.astro';
+import { LEROBOT_SO101, SO_ARM100, REPO, REPO_BLOB } from '../data/site';
+
+const need = [
+  { icon: 'arm', t: 'An SO-101 arm', d: 'The follower arm does the work. A leader arm, the one you move by hand, is optional and can be added any time.' },
+  { icon: 'plug', t: 'USB and power', d: 'A USB cable and a power supply for the arm’s motor board. What comes with your kit depends on where you got it, so follow your kit’s own instructions.' },
+  { icon: 'terminal', t: 'A computer', d: 'macOS, Linux, a Raspberry Pi or Windows, with <code>git</code> and an internet connection for the first run.' },
+  { icon: 'camera', t: 'Cameras (optional)', d: 'One or two USB or network cameras let the arm see the table. You can add them later.' },
+];
+const journey = [
+  ['Setup check', 'See what is connected and what is left.'],
+  ['Assemble', 'One card per joint. Skip it if your arms are built.'],
+  ['Motor IDs', 'Give each motor its number, one at a time.'],
+  ['Calibrate', 'Teach each joint its range. 0 is the middle.'],
+  ['Cameras', 'Optional. Click on the picture to map the table.'],
+];
+---
+<Base title="Get started" description="Install SO-101 Suite on macOS, Linux, Raspberry Pi or Windows with one command, and find the official SO-101 build guides.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Get started</span></nav>
+    <h1>Get started</h1>
+    <p class="lead">What you need, how to build the arm, and the one command that sets everything up.</p>
+  </div>
+
+  <section class="section tight" aria-labelledby="need-h">
+    <div class="wrap">
+      <SectionHead eyebrow="Step 1" title="What you need" id="need-h" />
+      <div class="grid g4">
+        {need.map((n) => (
+          <div class="card feat"><span class="fi"><Icon name={n.icon} /></span><h3>{n.t}</h3><p set:html={n.d} /></div>
+        ))}
+      </div>
+      <div class="callout tip" style="margin-top:var(--s5)">
+        <Icon name="info" />
+        <div class="ct"><span class="tt">No arm yet?</span><p>You do not need one to start. Try the <a href="/demo/">live demo</a> or read <a href="/learn/">Learn</a> first. This site does not sell hardware.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight" aria-labelledby="build-h">
+    <div class="wrap">
+      <SectionHead eyebrow="Step 2" title="Build the arm" lead="The arm itself is designed and documented by other people. Their guides are the source of truth for parts and assembly, so start there." id="build-h" />
+      <div class="grid g2">
+        <a class="card feat" href={SO_ARM100} target="_blank" rel="noopener noreferrer">
+          <span class="fi"><Icon name="cube" /></span>
+          <h3>SO-ARM100 build guide</h3>
+          <p>The open-source design for the SO-100 and SO-101 arms: 3D files, build instructions and parts information, by The Robot Studio.</p>
+          <span class="more">Open on GitHub <Icon name="external" /></span>
+        </a>
+        <a class="card feat" href={LEROBOT_SO101} target="_blank" rel="noopener noreferrer">
+          <span class="fi"><Icon name="book" /></span>
+          <h3>LeRobot: SO-101 docs</h3>
+          <p>Assembly, motor setup and calibration from the LeRobot project at Hugging Face.</p>
+          <span class="more">Open the docs <Icon name="external" /></span>
+        </a>
+      </div>
+      <p class="muted" style="margin-top:var(--s4)">When you are building, the app’s <b>Assemble</b> page keeps your place: one card per joint, with a tick box for each step.</p>
+    </div>
+  </section>
+
+  <section class="section tight" id="install" aria-labelledby="install-h">
+    <div class="wrap">
+      <SectionHead eyebrow="Step 3" title="Install the Suite" lead="Pick your system. Paste the command. The app opens in your browser." id="install-h" />
+      <InstallTabs id="gs" />
+      <div class="grid g2" style="margin-top:var(--s6)">
+        <div class="card flat">
+          <h3>What happens next</h3>
+          <ol class="steps-list prose" style="max-width:none">
+            <li>The script sets up the app and opens it in your browser.</li>
+            <li>Pick the Welcome card that fits: <i>I just unboxed it</i>, <i>My arm is built</i>, or <i>Just looking around</i>.</li>
+            <li>Follow the <b>Next step</b> button. It always shows what to do next.</li>
+          </ol>
+        </div>
+        <div class="card flat">
+          <h3>Next time</h3>
+          <p>Open a terminal in the project folder and run:</p>
+          <div class="cmd"><pre><code>uv run so101 start</code></pre></div>
+          <p class="muted" style="margin-top:var(--s3)">Plug the arm in at any time. The app notices.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight" aria-labelledby="journey-h">
+    <div class="wrap">
+      <SectionHead eyebrow="Step 4" title="The five steps inside the app" id="journey-h" />
+      <ol class="steps" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+        {journey.map(([t, d]) => <li><h3>{t}</h3><p>{d}</p></li>)}
+      </ol>
+      <p style="margin-top:var(--s5)" class="muted">The Setup check ticks them off for you, from what it sees on your machine. Optional steps never block you.</p>
+    </div>
+  </section>
+
+  <section class="section tight" aria-labelledby="help-h">
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <h2 id="help-h">Stuck?</h2>
+          <p>Every screen has a Help page: pick a symptom, run the test, follow the fix, or copy diagnostics to share. You can also read the <a href="/docs/">docs</a>, or ask on <a href={`${REPO}/issues`} target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+        </div>
+        <a class="btn primary lg" href="/demo/#/help"><Icon name="play" /> See the Help page</a>
+      </div>
+    </div>
+  </section>
+</Base>

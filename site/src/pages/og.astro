@@ -1,0 +1,17 @@
+---
+// 1200x630 social-preview card. Screenshot this page at exactly 1200x630 and save it as public/og.png.
+import Base from '../layouts/Base.astro';
+import ArmArt from '../components/ArmArt.astro';
+import Logo from '../components/Logo.astro';
+---
+<Base title="Social preview" noindex bare bodyClass="og">
+  <div class="og-card">
+    <div class="copy-col">
+      <div class="brand"><Logo size={52} /> SO-101 Suite</div>
+      <h1>From unopened box to a <span class="hl">moving robot arm</span>.</h1>
+      <p>Set up, calibrate and learn your SO-101 arm. Try the live demo, no install.</p>
+      <div class="tags"><span>Free</span><span>Open source</span><span>Runs in your browser</span></div>
+    </div>
+    <div class="art" aria-hidden="true"><ArmArt idp="og" animate={false} /></div>
+  </div>
+</Base>

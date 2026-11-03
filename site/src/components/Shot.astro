@@ -1,0 +1,37 @@
+---
+// <Shot name="calibrate" alt="..." caption="..."/>
+// Uses the real docs/screenshots/<name>.png when it exists at build time; otherwise a tidy placeholder (never a broken image).
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props { name: string; alt: string; caption?: string; label?: string; eager?: boolean; class?: string }
+const { name, alt, caption, label, eager = false, class: cls = '' } = Astro.props;
+
+const phone = name.startsWith('mobile');
+const file = path.resolve(process.cwd(), '..', 'docs', 'screenshots', `${name}.png`);
+let dims: { w: number; h: number } | null = null;
+if (fs.existsSync(file)) {
+  try {
+    const fd = fs.openSync(file, 'r'); const b = Buffer.alloc(24); fs.readSync(fd, b, 0, 24, 0); fs.closeSync(fd);
+    // PNG: 8-byte signature, then the IHDR chunk with width and height as big-endian uint32.
+    if (b.toString('ascii', 1, 4) === 'PNG') dims = { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  } catch { dims = null; }
+}
+const ar = phone ? '390 / 844' : '1440 / 900';
+const title = label ?? name.replace(/^mobile-/, 'Mobile ').replace(/-/g, ' ');
+---
+<figure class={`shot ${phone ? 'phone' : ''} ${cls}`.trim()}>
+  <div class="frame">
+    <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
+    {dims ? (
+      <img src={`/screenshots/${name}.png`} width={dims.w} height={dims.h} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchpriority={eager ? 'high' : undefined} />
+    ) : (
+      <div class={`ph ${phone ? 'phone-ph' : ''}`} style={`--ar:${ar}`} role="img" aria-label={alt}>
+        <div class="rail" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="pane" aria-hidden="true"><div class="t"></div><div class="b"><div></div><div></div></div></div>
+        <div class="label" aria-hidden="true">{title}</div>
+      </div>
+    )}
+  </div>
+  {caption && <figcaption set:html={caption} />}
+</figure>

@@ -1,0 +1,80 @@
+{
+  "_doc": "Factory defaults for the SO-101 Suite. Nothing here is specific to one arm: every arm is calibrated by its owner. Your own changes are stored in ~/.so101/config.json (the effective values are defaults + your changes, see GET /api/suite/defaults).",
+  "serial": {
+    "_doc": "How the computer talks to the motors. The STS3215 servos ship at 1 Mbit/s with ID 1, and the SO-101 uses IDs 1 to 6 from the base to the gripper.",
+    "baud": 1000000,
+    "scan_baud_rates": [
+      1000000,
+      500000,
+      250000,
+      128000,
+      115200,
+      76800,
+      57600,
+      38400
+    ],
+    "motor_ids": {
+      "shoulder_pan": 1,
+      "shoulder_lift": 2,
+      "elbow_flex": 3,
+      "wrist_flex": 4,
+      "wrist_roll": 5,
+      "gripper": 6
+    }
+  },
+  "calibration": {
+    "_doc": "Calibration teaches an arm where the middle of each joint is. 0 = the middle of the range you recorded (LeRobot's convention). ticks_per_turn is the motor's 12-bit position scale (0 to 4095 is one full turn).",
+    "mid_ticks": 2047,
+    "ticks_per_turn": 4095,
+    "min_span_ticks": 150,
+    "wrist_roll_full_turn": true,
+    "follower_id": "my_follower",
+    "leader_id": "my_leader"
+  },
+  "safety": {
+    "_doc": "Limits that keep the arm and the motors safe. Loads are percent of a motor's maximum torque. The limit values are built in and are not changeable from the settings API; confirm_before_move and speed_preset are the user's choices.",
+    "load_limit_pct": 70,
+    "wrist_roll_load_limit_pct": 85,
+    "temp_limit_c": 68,
+    "teleop_hz": 120,
+    "teleop_slew_ticks": 20,
+    "teleop_slew_sync_ticks": 2,
+    "confirm_before_move": true,
+    "speed_preset": "gentle"
+  },
+  "cameras": {
+    "_doc": "How cameras are opened. Pictures are requested at this size; the pick & place vision and the camera mapping assume 640x480. stale_after_s is how long without a new picture before the app says the camera is lost.",
+    "width": 640,
+    "height": 480,
+    "fps": 30,
+    "fourcc": "MJPG",
+    "jpeg_quality": 75,
+    "stale_after_s": 2.5
+  },
+  "server": {
+    "_doc": "Where the web app listens. 127.0.0.1 means this computer only (the safe default: the app has no password). Use --host 0.0.0.0 to let other devices on your network open it, for example a Raspberry Pi screen.",
+    "host": "127.0.0.1",
+    "port": 8000
+  },
+  "ui": {
+    "_doc": "Look and feel. units: 'deg' shows joint angles in degrees with 0 at the middle, 'lerobot' shows LeRobot's -100..+100 scale. onboarded: once true, the address / opens the dashboard instead of the welcome page. calibrationPrompted: set once the first-time calibration offer has been shown.",
+    "theme": "auto",
+    "accent": "orange",
+    "guide": "beginner",
+    "units": "deg",
+    "textSize": "normal",
+    "reduceMotion": false,
+    "onboarded": false,
+    "calibrationPrompted": false
+  },
+  "adv": {
+    "_doc": "Advanced switches. disabledModules lists module ids that are installed but turned off. trace* control the Inspector: trace starts recording when the app launches, traceRaw also records raw bytes, traceMax is how many entries are kept in memory.",
+    "rawLinks": false,
+    "modulesEnabled": true,
+    "logLevel": "info",
+    "disabledModules": [],
+    "trace": false,
+    "traceRaw": false,
+    "traceMax": 5000
+  }
+}

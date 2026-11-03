@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { getDocs } from '../../data/docs';
+import { REPO, REPO_BLOB, REPO_TREE } from '../../data/site';
+const docs = await getDocs();
+---
+<Base title="Docs" description="Documentation for SO-101 Suite: architecture, the HTTP API, modules and troubleshooting.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Docs</span></nav>
+    <h1>Docs</h1>
+    <p class="lead">How SO-101 Suite is put together, and how to work with it. The same files live in the <a href={`${REPO_TREE}/docs`} target="_blank" rel="noopener noreferrer">docs folder</a> of the repository.</p>
+  </div>
+  <div class="wrap" style="padding-bottom:var(--s7)">
+    {docs.length === 0 ? (
+      <div class="empty-note">
+        <p><b>The docs are being written.</b></p>
+        <p>In the meantime: the <a href={REPO} target="_blank" rel="noopener noreferrer">README</a> and <a href={`${REPO_BLOB}/AGENTS.md`} target="_blank" rel="noopener noreferrer">AGENTS.md</a> on GitHub cover the basics, and <a href="/learn/">Learn</a> explains the parts of the arm.</p>
+      </div>
+    ) : (
+      <div class="grid g2">
+        {docs.map((d) => (
+          <a class="card feat" href={`/docs/${d.id}/`}>
+            <span class="fi"><Icon name="file" /></span>
+            <h3>{d.title}</h3>
+            {d.description && <p>{d.description}</p>}
+            <span class="more">Read <Icon name="arrow" /></span>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</Base>

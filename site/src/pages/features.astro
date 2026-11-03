@@ -1,0 +1,128 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Shot from '../components/Shot.astro';
+import SectionHead from '../components/SectionHead.astro';
+
+const tours = [
+  {
+    id: 'setup-check', icon: 'checks', title: 'Setup check: what is connected, what is left',
+    lead: 'A truthful list that comes from your real machine. Every check is grouped, and every item that is not OK has a fix button.',
+    points: ['Checks your computer, your arms, your cameras and your calibration.', 'The top bar always shows a <b>Next step</b> button, so you never wonder what to do.', 'A black camera box is treated as a bug: you see the reason instead.', '<b>Copy diagnostics</b> gives you a plain-text report to paste to a friend, an AI or an issue. No personal data in it.'],
+    shot: { name: 'setup', alt: 'The Setup check screen: a grouped list of checks with green ticks and a fix button on the first item that is not OK.', label: 'Setup check' },
+    demo: '/demo/#/setup',
+  },
+  {
+    id: 'assemble', icon: 'cube', title: 'Assembly guide: one joint at a time',
+    lead: 'Parts, tools, and one card per joint. Tick steps off as you go, and open the official videos when you want to watch someone do it.',
+    points: ['Each step names one action and the exact part you can see.', 'Already built your arms? Skip with one click.', 'Links to the official SO-ARM100 and LeRobot build guides.'],
+    shot: { name: 'assemble', alt: 'The Assemble screen with a parts list and a step card showing a diagram, what to do and how to check it worked.', label: 'Assemble' },
+    demo: '/demo/#/assemble',
+  },
+  {
+    id: 'motor-ids', icon: 'plug', title: 'Motor IDs without the guesswork',
+    lead: 'Every motor on the shared cable needs its own number, 1 to 6. The app finds your board, then sets IDs one motor at a time.',
+    points: ['Find the board by unplugging and replugging its USB cable. No port names to type.', 'Label each board <b>Leader</b> or <b>Follower</b>.', 'It only writes an ID when exactly one motor answers, and it tells you why when it refuses: “2 motors answer: plug in only the gripper motor.”'],
+    shot: { name: 'motors', alt: 'The Motor IDs screen showing the board found, the Leader and Follower labels, and a Set ID button with its reason.', label: 'Motor IDs' },
+    demo: '/demo/#/motors',
+  },
+  {
+    id: 'calibrate', icon: 'sliders', title: 'Calibration: 0 is the middle',
+    lead: 'Teach each joint its range. Every joint then reads 0 at the middle of the range you just recorded, the same convention LeRobot uses.',
+    points: ['<b>Centre</b> the arm, <b>sweep</b> each joint, <b>save</b>. About two minutes.', 'Each joint has a bar with a 0 tick in the middle, a live value in degrees or in LeRobot’s -100 to +100, and min and max markers that grow as you move.', 'Saved to a LeRobot-compatible file. The app shows the path and lets you set it as your default.'],
+    shot: { name: 'calibrate', alt: 'The Calibrate screen: six joint bars, each with a zero tick in the middle and growing min and max markers.', label: 'Calibrate' },
+    demo: '/demo/#/calibrate', zero: true,
+  },
+  {
+    id: 'cameras', icon: 'camera', title: 'Cameras, and click-to-calibrate',
+    lead: 'Add a USB or network camera, watch the live view, then teach the app where the table is by clicking on the picture.',
+    points: ['Detects USB cameras and takes a network URL.', 'Shows the reason when a camera does not work: permission, in use by another app, unplugged.', '<b>Click-to-calibrate:</b> click the gripper tip in the picture. Each click is a taught point, and the fit error is shown.', 'Prefer to script it? A snapshot URL and a teach endpoint do the same from the command line or an AI agent.'],
+    shot: { name: 'cameras', alt: 'The Cameras screen with a live view, taught points marked on the picture and the fit error listed beside it.', label: 'Cameras' },
+    demo: '/demo/#/cameras',
+  },
+  {
+    id: 'learn', icon: 'book', title: 'Learn, with a 3D arm you can click',
+    lead: 'Short articles in plain words, a glossary that explains every term, and a 3D model of your arm that names each part when you click it.',
+    points: ['Start with <i>Meet your arm</i>: a finger is really a <b>jaw</b>, and you have two.', 'Every unfamiliar word in the app opens a short card with a picture.', 'Beginner mode shows explanations inline. Expert mode folds them away.'],
+    shot: { name: 'anatomy', alt: 'The Meet your arm page: a 3D SO-101 with one part highlighted, showing its name, motor ID and a short explanation.', label: 'Meet your arm' },
+    demo: '/demo/#/learn/meet-your-arm', links: [['/learn/', 'Read the articles here'], ['/glossary/', 'Open the glossary']],
+  },
+  {
+    id: 'modules', icon: 'modules', title: 'Modules: add things by adding a folder',
+    lead: 'Drop a folder into <code>modules/</code> and the app finds it. Pick and place ships built in, as an example of what a module can do.',
+    points: ['A module is a <code>module.json</code> plus an optional <code>backend.py</code> and a page for the app.', 'The Modules page shows what is installed and why a module failed to load, if it did.', '<b>Add a module with AI</b> copies a prompt that points your agent at AGENTS.md and the add-module skill.'],
+    shot: { name: 'modules', alt: 'The Modules screen listing installed modules with their status and an Add a module with AI button.', label: 'Modules' },
+    demo: '/demo/#/modules', links: [['/modules/', 'Browse the module gallery']],
+  },
+  {
+    id: 'ai', icon: 'sparkles', title: 'Friendly to AI coding agents',
+    lead: 'Claude Code, Codex and Cursor read the same rules you do, and can drive the same clicks.',
+    points: ['<code>AGENTS.md</code> and <code>CLAUDE.md</code> for the rules, <code>.claude/skills/</code> for the common jobs, <code>llms.txt</code> for a quick overview.', 'A documented HTTP API, including a camera snapshot URL.', 'A demo mode with a simulated motor bus, so an agent can test without a real arm and without risk.'],
+    demo: '/demo/#/help', links: [['/ai/', 'How agents use it']],
+  },
+  {
+    id: 'settings', icon: 'gear', title: 'Settings, with safe defaults',
+    lead: 'Make it look and explain itself the way you like. The safe choices are the defaults.',
+    points: ['<b>Appearance:</b> dark, light or automatic, accent colours, text size, reduce motion.', '<b>Explanations:</b> Beginner or Expert. <b>Units:</b> degrees or -100 to +100.', '<b>Safety:</b> confirm before every arm move (on by default), a gentle speed preset, and Space as a STOP shortcut.', '<b>Data:</b> export and import your config, or reset the first-run welcome.'],
+    shot: { name: 'settings', alt: 'The Settings screen with Appearance, Explanations, Units, Safety and Data groups.', label: 'Settings' },
+    demo: '/demo/#/settings',
+  },
+];
+---
+<Base title="Features" description="A tour of SO-101 Suite: setup check, assembly guide, motor IDs, calibration with 0 at the middle, cameras with click-to-calibrate, a Learn section with 3D anatomy, modules and AI-friendly design.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Features</span></nav>
+    <h1>A tour of SO-101 Suite</h1>
+    <p class="lead">Everything between an unopened box and a calibrated, working arm. Every screen below is in the <a href="/demo/">live demo</a> too, so you can try it as you read.</p>
+    <nav class="row" style="margin-top:var(--s5)" aria-label="Jump to a feature">
+      {tours.map((t) => <a class="chip" href={`#${t.id}`}>{t.title.split(':')[0]}</a>)}
+    </nav>
+  </div>
+
+  <div class="wrap">
+    {tours.map((t, i) => (
+      <section class="tour" id={t.id} aria-labelledby={`${t.id}-h`}>
+        <div class="tour-copy">
+          <span class="num">{String(i + 1).padStart(2, '0')} · <Icon name={t.icon} /></span>
+          <h2 id={`${t.id}-h`} set:html={t.title} />
+          <p class="lead" set:html={t.lead} />
+          {t.zero && (
+            <div class="zero" role="img" aria-label="A joint bar with a tick at the middle marked 0 and the recorded range around it">
+              <div class="jb"><span class="r"></span><span class="d"></span></div>
+              <div class="lab"><span>min</span><span>0 = middle</span><span>max</span></div>
+            </div>
+          )}
+          <ul class="checks">{t.points.map((p) => <li><Icon name="check" /><span set:html={p} /></li>)}</ul>
+          <div class="row">
+            <a class="btn primary sm" href={t.demo}><Icon name="play" /> Try it in the demo</a>
+            {(t.links ?? []).map(([href, label]) => <a class="btn ghost sm" href={href}>{label} <Icon name="arrow" /></a>)}
+          </div>
+        </div>
+        {t.shot ? (
+          <Shot name={t.shot.name} alt={t.shot.alt} label={t.shot.label} />
+        ) : (
+          <div class="win" data-copy-scope>
+            <div class="bar" aria-hidden="true"><i></i><i></i><i></i><span>terminal</span></div>
+            <pre><code data-copy-source><span class="c"># start the app with simulated hardware</span>
+<span class="o">$</span> uv run so101 start --demo
+
+<span class="c"># what is connected, what is left?</span>
+<span class="o">$</span> curl http://localhost:&lt;port&gt;/api/suite/checklist
+
+<span class="c"># one JPEG frame from camera 0</span>
+<span class="o">$</span> curl -o frame.jpg http://localhost:&lt;port&gt;/api/suite/snapshot/0.jpg</code></pre>
+          </div>
+        )}
+      </section>
+    ))}
+  </div>
+
+  <section class="section tight">
+    <div class="wrap">
+      <div class="band">
+        <div><h2>See it move.</h2><p>The demo is the real app with simulated hardware. Open it and follow the Next step button.</p></div>
+        <a class="btn primary lg" href="/demo/"><Icon name="play" /> Try the live demo</a>
+      </div>
+    </div>
+  </section>
+</Base>

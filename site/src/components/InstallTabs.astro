@@ -1,0 +1,34 @@
+---
+import Icon from './Icon.astro';
+import { INSTALL } from '../data/site';
+interface Props { id?: string; notes?: boolean }
+const { id = 'install', notes = true } = Astro.props;
+const tabs = [
+  { key: 'mac', label: 'macOS', cmd: INSTALL.unix, prompt: '$', shell: 'Terminal', notes: ['Open <b>Terminal</b>, paste the line, press <kbd>Return</kbd>.', 'The script installs what the app needs and opens it in your browser.', 'Needs <code>git</code>. macOS offers to install it the first time you run <code>git</code>.'] },
+  { key: 'linux', label: 'Linux & Raspberry Pi', cmd: INSTALL.unix, prompt: '$', shell: 'Terminal', notes: ['Works on desktop Linux and on a Raspberry Pi. Open a terminal and paste the line.', 'Needs <code>git</code> (<code>sudo apt install git</code> on Debian, Ubuntu and Raspberry Pi OS).', 'If your user cannot open serial ports, the Setup check in the app tells you.'] },
+  { key: 'win', label: 'Windows', cmd: INSTALL.windows, prompt: '>', shell: 'PowerShell', notes: ['Open <b>PowerShell</b> and paste the three lines.', 'The script installs what the app needs and opens it in your browser.', 'Needs <code>git</code> (<a href="https://git-scm.com/download/win" target="_blank" rel="noopener noreferrer">git-scm.com</a>).'] },
+];
+---
+<div class="install" data-tabs data-default={tabs[0].key}>
+  <div class="install-head">
+    <div class="tablist" role="tablist" aria-label="Choose your operating system">
+      {tabs.map((t, i) => (
+        <button class="tab" role="tab" type="button" id={`${id}-tab-${t.key}`} data-key={t.key} aria-controls={`${id}-panel-${t.key}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
+      ))}
+    </div>
+  </div>
+  {tabs.map((t, i) => (
+    <div class="tabpanel" role="tabpanel" id={`${id}-panel-${t.key}`} aria-labelledby={`${id}-tab-${t.key}`} data-key={t.key} hidden={i !== 0 ? true : undefined}>
+      <p class="os-label"><b>{t.label}</b> · {t.shell}</p>
+      <div class="cmd">
+        <pre><code data-copy-source>{t.cmd.split('\n').map((l, n, a) => (<Fragment><span class="p" aria-hidden="true">{t.prompt} </span>{l}{n < a.length - 1 ? '\n' : ''}</Fragment>))}</code></pre>
+        <button class="copy" type="button" data-copy aria-label={`Copy the ${t.label} install command`}>
+          <span class="idle"><Icon name="copy" /> Copy</span>
+          <span class="done"><Icon name="check" /> Copied</span>
+        </button>
+      </div>
+      {notes && <ul class="notes">{t.notes.map((n) => <li set:html={n} />)}</ul>}
+    </div>
+  ))}
+  <p class="sr-only" role="status" aria-live="polite" data-copy-status></p>
+</div>

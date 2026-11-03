@@ -1,0 +1,85 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import SectionHead from '../components/SectionHead.astro';
+import { getModules } from '../data/content';
+import { REPO_TREE } from '../data/site';
+
+const modules = getModules();
+const prompt = 'Read AGENTS.md, then use the add-module skill to add a module to this project that shows the follower arm’s joint angles as a live table.';
+const manifest = `{
+  "id": "hello",
+  "name": "Hello module",
+  "description": "A tiny example page.",
+  "version": "0.1.0",
+  "author": "You",
+  "license": "AGPL-3.0-or-later",
+  "requires": [],
+  "pages": [{ "id": "hello", "title": "Hello", "icon": "sparkles", "script": "ui.js" }],
+  "backend": null
+}`;
+---
+<Base title="Modules" description="Modules extend SO-101 Suite: drop a folder into modules/ and the app finds it. Pick and place ships built in. Browse what is in the repository.">
+  <div class="wrap page-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Modules</span></nav>
+    <h1>Modules</h1>
+    <p class="lead">A module is a folder. Drop it into <code>modules/</code> and the app finds it, shows its status, and adds its page to the navigation.</p>
+  </div>
+
+  <section class="section tight" aria-labelledby="gallery-h">
+    <div class="wrap">
+      <SectionHead title="In the box" id="gallery-h" />
+      <div class="grid g3">
+        <div class="card mod">
+          <div class="top"><span class="fi"><Icon name="target" /></span><div><h3>Pick and place</h3><span class="badge accent">Built in</span></div></div>
+          <p>Uses a calibrated camera to find an object on the table, pick it up and drop it into a bowl. It follows safety rules learned on real hardware, like carrying objects high enough to clear the rim.</p>
+          <dl><div><dt>Needs</dt><dd>A follower arm and a camera</dd></div></dl>
+        </div>
+        {modules.map((m) => (
+          <div class="card mod">
+            <div class="top"><span class="fi"><Icon name="modules" /></span><div><h3>{m.name}</h3>{m.version && <span class="badge">v{m.version}</span>}</div></div>
+            {m.description && <p>{m.description}</p>}
+            <dl>
+              {m.author && <div><dt>By</dt><dd>{m.author}</dd></div>}
+              {m.license && <div><dt>Licence</dt><dd>{m.license}</dd></div>}
+              {m.requires.length > 0 && <div><dt>Needs</dt><dd>{m.requires.join(', ')}</dd></div>}
+              {m.pages.length > 0 && <div><dt>Pages</dt><dd>{m.pages.map((p) => p.title).join(', ')}</dd></div>}
+              {m.hasBackend && <div><dt>Has</dt><dd>a backend</dd></div>}
+            </dl>
+          </div>
+        ))}
+      </div>
+      {modules.length === 0 && (
+        <p class="muted" style="margin-top:var(--s5)">No community modules are listed yet. Be the first: it is a folder and a small JSON file.</p>
+      )}
+      <p style="margin-top:var(--s5)"><a href={`${REPO_TREE}/modules`} target="_blank" rel="noopener noreferrer">Browse the modules folder on GitHub <Icon name="external" /></a> · <a href="/demo/#/modules">See the Modules page in the demo</a></p>
+    </div>
+  </section>
+
+  <section class="section alt" aria-labelledby="make-h">
+    <div class="wrap">
+      <div class="split" style="align-items:start">
+        <div class="stack">
+          <span class="eyebrow">Make your own</span>
+          <h2 id="make-h">A module is a folder and a small file.</h2>
+          <ol class="steps-list prose" style="max-width:none">
+            <li>Create <code>modules/my-module/</code> with a <code>module.json</code>.</li>
+            <li>Optional: add a <code>backend.py</code> with a <code>handle(method, path, body, ctx)</code> function that returns a status and a payload. The app serves it at <code>/api/m/my-module/…</code>.</li>
+            <li>Optional: add a <code>ui.js</code> page that follows the same rules as the built-in pages.</li>
+            <li>Restart the app. The Modules page shows it, or tells you why it did not load.</li>
+          </ol>
+          <p class="muted">Rather not write it by hand? Ask your coding agent. The prompt below points it at the right files.</p>
+          <div class="cmd" data-copy-scope>
+            <pre style="white-space:normal;line-height:1.5"><code data-copy-source>{prompt}</code></pre>
+            <button class="copy" type="button" data-copy aria-label="Copy the prompt"><span class="idle"><Icon name="copy" /> Copy</span><span class="done"><Icon name="check" /> Copied</span></button>
+          </div>
+          <p class="sr-only" role="status" aria-live="polite" data-copy-status></p>
+        </div>
+        <div class="win">
+          <div class="bar" aria-hidden="true"><i></i><i></i><i></i><span>modules/hello/module.json</span></div>
+          <pre><code>{manifest}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

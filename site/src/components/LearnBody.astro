@@ -1,0 +1,33 @@
+---
+// Renders an article body from app/suite/js/content/learn.js:
+//   string = paragraph | {list:[..]} | {steps:[..]} | {callout:{kind,text}}
+import Icon from './Icon.astro';
+import { inline } from '../data/content';
+interface Props { body: unknown[]; learnIds?: Set<string> }
+const { body, learnIds } = Astro.props;
+const CALLOUT = {
+  tip: { icon: 'bulb', label: 'Tip' },
+  why: { icon: 'info', label: 'Why it matters' },
+  warn: { icon: 'alert', label: 'Careful' },
+  safety: { icon: 'shield', label: 'Safety' },
+  ok: { icon: 'check', label: 'Good to know' },
+} as Record<string, { icon: string; label: string }>;
+const unknown = body.filter((b: any) => typeof b !== 'string' && !(b && typeof b === 'object' && ('list' in b || 'steps' in b || 'callout' in b)));
+if (unknown.length) console.warn(`[site] WARNING: ${unknown.length} learn body block(s) with an unknown shape were skipped.`);
+---
+{body.map((b: any) => {
+  if (typeof b === 'string') return <p set:html={inline(b, learnIds)} />;
+  if (b && Array.isArray(b.list)) return <ul>{b.list.map((li: string) => <li set:html={inline(li, learnIds)} />)}</ul>;
+  if (b && Array.isArray(b.steps)) return <ol class="steps-list">{b.steps.map((li: string) => <li set:html={inline(li, learnIds)} />)}</ol>;
+  if (b && b.callout) {
+    const kind = CALLOUT[b.callout.kind] ? b.callout.kind : 'tip';
+    const c = CALLOUT[kind];
+    return (
+      <aside class={`callout ${kind}`} role={kind === 'safety' || kind === 'warn' ? 'note' : undefined}>
+        <Icon name={c.icon} />
+        <div class="ct"><span class="tt">{c.label}</span><p set:html={inline(b.callout.text, learnIds)} /></div>
+      </aside>
+    );
+  }
+  return null;
+})}

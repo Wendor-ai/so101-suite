@@ -1,0 +1,210 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import ArmArt from '../components/ArmArt.astro';
+import InstallTabs from '../components/InstallTabs.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Shot from '../components/Shot.astro';
+import { DESCRIPTION, FAQ, REPO, REPO_BLOB } from '../data/site';
+
+const site = Astro.site ?? new URL('https://so101-suite.pages.dev');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'SO-101 Suite',
+  description: DESCRIPTION,
+  url: new URL('/', site).href,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'macOS, Linux, Raspberry Pi OS, Windows',
+  isAccessibleForFree: true,
+  license: 'https://www.gnu.org/licenses/agpl-3.0.html',
+  sameAs: [REPO],
+  softwareHelp: { '@type': 'CreativeWork', url: new URL('/docs/', site).href },
+  image: new URL('/og.png', site).href,
+};
+
+const features = [
+  { icon: 'checks', t: 'Setup check', d: 'A live list of what is connected and what is left. It always tells you the next step.', href: '/features/#setup-check' },
+  { icon: 'cube', t: 'Assembly guide', d: 'Parts, tools and one card per joint, with the official videos linked. Tick steps off as you go.', href: '/features/#assemble' },
+  { icon: 'plug', t: 'Motor IDs', d: 'Find the board, label Leader and Follower, set IDs one motor at a time. If it is not safe, it says why.', href: '/features/#motor-ids' },
+  { icon: 'sliders', t: 'Calibration', d: 'Every joint reads 0 at the middle of its range. Saved in a LeRobot-compatible file.', href: '/features/#calibrate' },
+  { icon: 'camera', t: 'Cameras', d: 'Detect USB and network cameras, watch a live view, and click on the picture to map it to the table.', href: '/features/#cameras' },
+  { icon: 'book', t: 'Learn', d: 'Short articles, a searchable glossary and a 3D arm you can click to meet every part.', href: '/features/#learn' },
+  { icon: 'modules', t: 'Modules', d: 'Drop a folder into modules/ and the app finds it. Pick and place is built in.', href: '/features/#modules' },
+  { icon: 'sparkles', t: 'Built for AI agents', d: 'AGENTS.md, skills, a documented HTTP API and a demo mode for agents to test against.', href: '/features/#ai' },
+  { icon: 'shield', t: 'Calm and safe by default', d: 'The arm moves only when you ask, after a plain sentence about what will move. STOP is always in reach.', href: '/features/#settings' },
+];
+---
+<Base jsonLd={jsonLd}>
+  <!-- hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="chip rise"><span class="dot" aria-hidden="true"></span> Free and open source · AGPL-3.0</span>
+        <h1 id="hero-title" class="rise d1">From unopened box to a <span class="hl">moving robot arm</span>.</h1>
+        <p class="lead rise d2">SO-101 Suite is a web app for the SO-101 arm. It walks you through setup, calibration and cameras, one calm step at a time, and explains every part along the way.</p>
+        <div class="hero-cta rise d3">
+          <a class="btn primary lg" href="/demo/"><Icon name="play" /> Try the live demo</a>
+          <a class="btn lg" href="#install">Get started <Icon name="arrow" /></a>
+        </div>
+        <ul class="hero-meta rise d3" aria-label="Highlights">
+          <li><Icon name="check" /> Demo runs in your browser, no install</li>
+          <li><Icon name="check" /> No account, nothing leaves your computer</li>
+          <li><Icon name="check" /> macOS · Linux · Raspberry Pi · Windows</li>
+        </ul>
+      </div>
+      <div class="rise d2">
+        <div class="arm-stage">
+          <ArmArt />
+          <ul class="arm-legend" aria-label="The six joints, numbered by motor ID">
+            <li><b>1</b> Shoulder pan</li><li><b>2</b> Shoulder lift</li><li><b>3</b> Elbow flex</li><li><b>4</b> Wrist flex</li><li><b>5</b> Wrist roll</li><li><b>6</b> Gripper</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- install -->
+  <section class="section alt" id="install" aria-labelledby="install-title">
+    <div class="wrap">
+      <div class="split">
+        <div class="stack">
+          <span class="eyebrow">Install</span>
+          <h2 id="install-title">One command to start.</h2>
+          <p class="lead">Paste it into a terminal. The script sets everything up and opens the app in your browser. Nothing to configure first.</p>
+          <ul class="checks">
+            <li><Icon name="check" /><span>No <code>sudo</code> on the normal path.</span></li>
+            <li><Icon name="check" /><span>Plug the arm in whenever you are ready. Setup check finds it.</span></li>
+            <li><Icon name="check" /><span>No arm yet? Run it anyway, or <a href="/demo/">try the demo</a> first.</span></li>
+          </ul>
+          <p><a href="/get-started/">Full guide for each system <Icon name="arrow" /></a></p>
+        </div>
+        <InstallTabs />
+      </div>
+    </div>
+  </section>
+
+  <!-- how it works -->
+  <section class="section" aria-labelledby="how-title">
+    <div class="wrap">
+      <SectionHead eyebrow="How it works" title="Three steps. One thing on screen at a time." id="how-title" />
+      <ol class="steps">
+        <li><h3>Run one command</h3><p>Paste the install line for your system. The app opens in your browser and checks your computer.</p></li>
+        <li><h3>Follow the next step</h3><p>Unbox, assemble, set motor IDs, calibrate, add a camera. Every screen says what to do next and why.</p></li>
+        <li><h3>Move your arm</h3><p>Drive the follower by hand with the leader, or let a camera help it pick things up. Learn explains what is happening.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- features -->
+  <section class="section alt" aria-labelledby="feat-title">
+    <div class="wrap">
+      <SectionHead eyebrow="What is inside" title="Everything between the box and the first move." lead="Made for people who have never set up a robot arm, and still useful when you have." id="feat-title" />
+      <div class="grid g3">
+        {features.map((f) => (
+          <a class="card feat" href={f.href}>
+            <span class="fi"><Icon name={f.icon} /></span>
+            <h3>{f.t}</h3>
+            <p>{f.d}</p>
+            <span class="more">See how <Icon name="arrow" /></span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- screenshots -->
+  <section class="section" aria-labelledby="shots-title">
+    <div class="wrap">
+      <SectionHead eyebrow="See it" title="The real app, not a mock-up." lead="These are screenshots of the same interface you get when you install it, running in demo mode." id="shots-title" />
+      <div class="stack-lg">
+        <div class="shots-hero">
+          <Shot name="home" alt="The SO-101 Suite home screen with a Next step card, progress ring, connected devices and a 3D arm." caption="<b>Home.</b> One next step, always. What is connected, and a live 3D arm." label="Home" />
+          <div class="stack-lg">
+            <Shot name="calibrate" alt="The calibration screen: each joint has a bar with a zero tick in the middle and a live value." caption="<b>Calibrate.</b> Every joint reads 0 at the middle of its range." label="Calibrate" />
+            <Shot name="cameras" alt="The cameras screen with a live view and click-to-calibrate marks on the picture." caption="<b>Cameras.</b> Click the gripper tip in the picture to teach the table." label="Cameras" />
+          </div>
+        </div>
+        <div class="grid g3" style="align-items:start">
+          <Shot name="learn" alt="The Learn hub with short articles grouped by level." caption="<b>Learn.</b> Plain-language articles and a glossary." label="Learn" />
+          <Shot name="anatomy" alt="A 3D model of the SO-101 arm with one part highlighted and its name, motor ID and explanation." caption="<b>Meet your arm.</b> Click a part of the 3D arm." label="Meet your arm" />
+          <Shot name="mobile-home" alt="The home screen on a phone, with the navigation as a bottom bar." caption="<b>On a phone.</b> The same app, from 360 px wide." label="Phone" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- demo band -->
+  <section class="section tight" aria-labelledby="demo-title">
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <h2 id="demo-title">No arm? No problem.</h2>
+          <p>Open the live demo and click through setup, calibration and the 3D arm. It is the real app with simulated hardware, so nothing you click is real and nothing is installed.</p>
+        </div>
+        <a class="btn primary lg" href="/demo/"><Icon name="play" /> Try the live demo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI teaser -->
+  <section class="section alt" aria-labelledby="ai-title">
+    <div class="wrap">
+      <div class="split">
+        <div class="stack">
+          <span class="eyebrow">Built for AI agents</span>
+          <h2 id="ai-title">Bring your coding agent.</h2>
+          <p class="lead">Claude Code, Codex and Cursor read the same rules you do. They can run the app with simulated hardware, call its API, and add a module while you watch.</p>
+          <ul class="checks">
+            <li><Icon name="check" /><span><b>AGENTS.md</b> and skills for the common jobs.</span></li>
+            <li><Icon name="check" /><span>A documented HTTP API, including a camera snapshot URL.</span></li>
+            <li><Icon name="check" /><span>A demo mode so tests never touch a real arm.</span></li>
+          </ul>
+          <p><a class="btn" href="/ai/">How agents use it <Icon name="arrow" /></a></p>
+        </div>
+        <div class="win" data-copy-scope>
+          <div class="bar" aria-hidden="true"><i></i><i></i><i></i><span>terminal</span></div>
+          <pre><code data-copy-source><span class="c"># the rules every agent follows</span>
+<span class="o">$</span> cat AGENTS.md
+
+<span class="c"># start the app with simulated hardware</span>
+<span class="o">$</span> uv run so101 start --demo
+
+<span class="c"># ask what is connected and what is left</span>
+<span class="o">$</span> curl http://localhost:&lt;port&gt;/api/suite/checklist</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" aria-labelledby="faq-title">
+    <div class="wrap">
+      <SectionHead eyebrow="Questions" title="Good questions, short answers." center id="faq-title" />
+      <div class="faq">
+        {FAQ.map((f) => (
+          <details>
+            <summary>{f.q}<Icon name="plus" /></summary>
+            <div class="ans" set:html={f.a} />
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- final call -->
+  <section class="section tight" aria-labelledby="cta-title">
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <h2 id="cta-title">Ready when you are.</h2>
+          <p>Try it in your browser now, or clone it and plug in your arm. It is open source, so you can read every line.</p>
+        </div>
+        <div class="row">
+          <a class="btn primary lg" href="/demo/"><Icon name="play" /> Try the live demo</a>
+          <a class="btn lg" href={REPO} target="_blank" rel="noopener noreferrer"><Icon name="github" /> View on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
