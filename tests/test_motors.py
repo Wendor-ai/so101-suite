@@ -9,6 +9,20 @@ from so101 import demo, suite_api, trace
 F, L = demo.FOLLOWER, demo.LEADER
 
 
+def hold_teleop(srv, monkeypatch):
+    """Switch teleop on and keep it on until the test switches it off.
+
+    The Teleop thread looks at `on` every 0.1 s, cannot start a real session on the demo's uncalibrated arms and switches it off again,
+    so a refusal test that sets `on` itself would depend on how fast its next HTTP request is (Windows runners are slow enough to lose)."""
+    tele = srv.server.TELE
+
+    def idle():
+        while tele.on:
+            time.sleep(0.01)
+    monkeypatch.setattr(tele, "_session", idle)
+    tele.on = True
+
+
 def read(arm, mid, addr, n=1):
     with arm.lock:
         return (arm.pk.read1ByteTxRx if n == 1 else arm.pk.read2ByteTxRx)(arm.ph, mid, addr)[0]
@@ -90,13 +104,13 @@ def test_two_adapters_vanishing_asks_to_unplug_just_one(srv):
     assert r["state"] == "unplug" and "Two adapters" in r["message"]
 
 
-def test_role_endpoint(srv):
+def test_role_endpoint(srv, monkeypatch):
     assert srv.post("/api/suite/role", {"port": L, "role": "boss"}).status == 400
     assert srv.post("/api/suite/role", {"port": "demo://nope", "role": "leader"}).status == 404
     r = srv.post("/api/suite/role", {"port": L, "role": "follower"})
     assert r.status == 200 and {p["path"]: p["role"] for p in r.json["ports"]} == {F: "leader", L: "follower"}
     assert srv.arms[L].role == "follower"
-    srv.server.TELE.on = True
+    hold_teleop(srv, monkeypatch)
     assert srv.post("/api/suite/role", {"port": L, "role": "leader"}).status == 409
 
 
@@ -201,7 +215,7 @@ def test_wiggle_refused_when_the_arm_is_offline(srv):
     assert srv.post("/api/suite/motors", {"action": "ping", "role": "leader", "id": 1}).status == 409
 
 
-def test_wiggle_refused_during_calibration_teleop_job_and_another_wiggle(srv):
+def test_wiggle_refused_during_calibration_teleop_job_and_another_wiggle(srv, monkeypatch):
     body = {"action": "wiggle", "role": "follower", "id": 1}
     srv.post(f"/api/calib/{srv.idx('follower')}/start")
     assert srv.arm("follower").calib["step"] == "center"
@@ -209,7 +223,7 @@ def test_wiggle_refused_during_calibration_teleop_job_and_another_wiggle(srv):
     assert r.status == 409 and "calibration" in r.json["error"]
     assert srv.post("/api/suite/motors", {"action": "ping", "role": "follower", "id": 1}).status == 200   # reading is harmless
     srv.arm("follower").calib_cancel()
-    srv.server.TELE.on = True
+    hold_teleop(srv, monkeypatch)
     r = srv.post("/api/suite/motors", body)
     assert r.status == 409 and "leader" in r.json["error"]
     srv.server.TELE.on = False
@@ -316,12 +330,12 @@ def test_set_id_refused_during_calibration(srv):
     assert srv.post("/api/suite/motors", {"action": "scan", "role": "follower"}).status == 409
 
 
-def test_set_id_refused_during_a_job_or_teleop(srv):
+def test_set_id_refused_during_a_job_or_teleop(srv, monkeypatch):
     demo.connect(F, [1])
     srv.server.PP.running = True
     assert srv.post("/api/suite/motors", {"action": "set_id", "role": "follower", "id": 6}).status == 409
     srv.server.PP.running = False
-    srv.server.TELE.on = True
+    hold_teleop(srv, monkeypatch)
     assert srv.post("/api/suite/motors", {"action": "set_id", "role": "follower", "id": 6}).status == 409
     assert demo.motor_ids(F) == [1]
 

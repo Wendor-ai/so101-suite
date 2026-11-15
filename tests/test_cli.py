@@ -185,6 +185,7 @@ def test_first_calibration_sentences():
     assert "welcome" in cli._first_calibration_sentence({"uncalibrated": [], "first_calibration_needed": False})
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="setup.sh is for macOS, Linux and Raspberry Pi (Windows uses setup.ps1); the Windows runner's bash is the WSL stub")
 def test_setup_sh_dry_run_changes_nothing_and_never_asks_for_sudo():
     import pathlib
     import subprocess

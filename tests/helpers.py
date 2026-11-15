@@ -93,6 +93,8 @@ def stop_demo_server(s):
     s.httpd.shutdown()
     s.httpd.server_close()
     s.server.stop_background()
+    for t in list(s.server.arms.values()) + list(s.server.cams):         # no thread of this server may keep touching the next server's simulated bus
+        t.join(timeout=8)
     time.sleep(0.3)
     trace.reset()
     demo.uninstall()
