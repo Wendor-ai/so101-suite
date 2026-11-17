@@ -13,8 +13,8 @@
     "check": "node scripts/check.mjs"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.4",
-    "astro": "^6.4.8"
+    "@astrojs/sitemap": "^3.7.5",
+    "astro": "^7.4.12"
   },
   "engines": {
     "node": ">=22.12.0"
