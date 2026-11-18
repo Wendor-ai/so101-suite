@@ -30,7 +30,13 @@ def calibrate(srv, roles):
     time.sleep(5.2)                           # the hand moves every joint through its range, one after another
     for r in roles:
         srv.post(f"/api/calib/{srv.idx(r)}/finish")
-        srv.wait(lambda r=r: srv.arm(r).calib["step"] == "done", what=f"{r} calibration to finish")
+        try:
+            srv.wait(lambda r=r: srv.arm(r).calib["step"] == "done", what=f"{r} calibration to finish")
+        except AssertionError as e:                                                      # TEMPORARY diagnostics for the Windows runner
+            import threading
+            a = srv.arm(r)
+            arms = [(t.path, t.stopped, t.online) for t in threading.enumerate() if type(t).__name__ == "Arm"]
+            raise AssertionError(f"{e}; calib={a.calib}; pos={a.pos}; hand_slot={demo.HAND_SLOT}; arm threads={arms}; threads={threading.active_count()}")
 
 
 def test_flag_is_on_while_connected_arms_are_uncalibrated(srv):

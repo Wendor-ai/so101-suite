@@ -158,8 +158,8 @@ def test_install_sandboxes_home_and_uninstall_restores_it(tmp_path, monkeypatch)
     monkeypatch.setenv("SO101_HOME", str(tmp_path / "realhome" / ".so101"))
     demo.install()
     try:
-        assert os.environ["HOME"].endswith("demo/home")
-        assert os.environ["SO101_HOME"].endswith("demo/home/.so101")
+        assert pathlib.PurePath(os.environ["HOME"]).parts[-2:] == ("demo", "home")
+        assert pathlib.PurePath(os.environ["SO101_HOME"]).parts[-3:] == ("demo", "home", ".so101")
     finally:
         demo.uninstall()
     assert os.environ["HOME"] == str(tmp_path / "realhome")

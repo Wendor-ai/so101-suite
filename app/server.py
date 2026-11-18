@@ -229,7 +229,7 @@ class Arm(threading.Thread):
 
     def run(self):
         t_off, t_slow = time.time(), 0.0
-        while not self.stopped and not self.gone:
+        while not (self.stopped or self.gone or _stop.is_set()):          # _stop also ends an arm that scan_arms added just as the app was shutting down
             if self.online: t_off = time.time()
             elif str(self.path).startswith("/dev/") and not os.path.exists(self.path) and time.time() - t_off > 10: self.gone = True; break      # its USB port vanished for good (not a Windows COMn name, not a demo adapter)
             try:
